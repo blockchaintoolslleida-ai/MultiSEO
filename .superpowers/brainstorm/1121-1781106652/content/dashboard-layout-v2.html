@@ -1,0 +1,461 @@
+<style>
+  /* Modern Dashboard styles */
+  .dash { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  .dash-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 60px;
+    background: #fff; border-bottom: 1px solid #e5e7eb;
+  }
+  .dash-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 17px; color: #111827;
+  }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dash-badge {
+    background: #6366f1; color: #fff; border-radius: 99px;
+    padding: 1px 7px; font-size: 11px; font-weight: 600;
+  }
+  .dash-sidebar {
+    width: 240px; min-width: 240px;
+    background: #fafbfc; border-right: 1px solid #e5e7eb;
+    display: flex; flex-direction: column; padding: 8px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px;
+    font-size: 13.5px; font-weight: 500; color: #4b5563;
+    transition: all 0.15s; cursor: pointer;
+  }
+  .nav-item:hover { background: #f0f0ff; color: #4f46e5; }
+  .nav-item.active { background: #eef2ff; color: #4f46e5; font-weight: 600; }
+  .nav-item.active svg { stroke: #4f46e5; }
+  .nav-divider { margin: 8px 12px; height: 1px; background: #e5e7eb; }
+  .nav-section { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #9ca3af; padding: 8px 12px 4px; }
+  .dash-content { flex: 1; background: #f5f6f8; padding: 24px; overflow-y: auto; }
+  .kpi-card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 18px 20px; transition: box-shadow 0.2s;
+  }
+  .kpi-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+  .kpi-label { font-size: 12px; font-weight: 500; color: #6b7280; letter-spacing: 0.3px; }
+  .kpi-value { font-size: 30px; font-weight: 700; margin-top: 2px; letter-spacing: -0.5px; }
+  .kpi-change { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 3px; margin-top: 4px; }
+  .kpi-change.up { color: #059669; }
+  .kpi-change.down { color: #dc2626; }
+  .panel {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .panel-title {
+    font-size: 15px; font-weight: 600; color: #111827;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .chart-bar {
+    flex: 1; border-radius: 4px 4px 0 0;
+    transition: all 0.3s;
+  }
+  .tenant-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; margin-top: auto;
+    border-radius: 8px; background: #eef2ff;
+    font-size: 13px; font-weight: 500; color: #4f46e5;
+  }
+  table.dash-table { width: 100%; font-size: 13.5px; border-collapse: collapse; }
+  table.dash-table th {
+    text-align: left; padding: 10px 12px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.4px; color: #9ca3af; border-bottom: 2px solid #e5e7eb;
+  }
+  table.dash-table td {
+    padding: 11px 12px; border-bottom: 1px solid #f3f4f6;
+    font-weight: 450; color: #374151;
+  }
+  table.dash-table tr:hover td { background: #f9fafb; }
+  .kw-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 99px;
+    font-size: 11.5px; font-weight: 500;
+  }
+  .difficulty-easy { background: #d1fae5; color: #065f46; }
+  .difficulty-medium { background: #fef3c7; color: #92400e; }
+  .difficulty-hard { background: #fee2e2; color: #991b1b; }
+  .competitor-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .comp-rank { font-weight: 700; font-size: 18px; width: 36px; text-align: center; color: #374151; }
+  .comp-bar-bg { flex: 1; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+  .comp-bar-fill { height: 100%; border-radius: 4px; }
+  .alert-box {
+    margin-top: 16px; padding: 12px 16px;
+    background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
+    font-size: 12.5px; font-weight: 500; color: #991b1b;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .header-icon-btn {
+    width: 38px; height: 38px; border-radius: 10px;
+    border: 1px solid #e5e7eb; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .header-icon-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+  }
+</style>
+
+<div class="dash">
+  <!-- Header -->
+  <div class="dash-header">
+    <div class="dash-logo">
+      <div class="logo-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      MultiSEO
+    </div>
+    <div class="header-actions">
+      <div class="header-icon-btn" style="position:relative;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <div class="dash-badge" style="position:absolute;top:-4px;right:-4px;font-size:10px;padding:1px 5px;">3</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="avatar">JD</div>
+        <span style="font-size:13.5px;font-weight:500;color:#374151;">Juan Díaz</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;min-height:calc(100vh - 60px);">
+    <!-- Sidebar -->
+    <div class="dash-sidebar">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Websites
+      </div>
+      <div class="nav-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Artículos
+      </div>
+      <div class="nav-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Rankings
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+        Reportes
+      </div>
+      <div class="nav-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Competidores
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-section">Sistema</div>
+      <div class="nav-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Configuración
+      </div>
+      <div class="tenant-badge">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Demo Company
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dash-content">
+      <!-- Breadcrumb -->
+      <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#9ca3af;margin-bottom:20px;">
+        <span style="color:#4f46e5;display:flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Demo Company</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>sitioweb.com</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span style="color:#374151;font-weight:500;">Dashboard SEO</span>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Posición Media
+          </div>
+          <div class="kpi-value" style="color:#059669;">8.4</div>
+          <div class="kpi-change up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+            +2.1 vs mes anterior
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Tráfico Estimado
+          </div>
+          <div class="kpi-value">24.8K</div>
+          <div class="kpi-change up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+            +12.3% este mes
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Backlinks
+          </div>
+          <div class="kpi-value">1,204</div>
+          <div class="kpi-change up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+            +48 nuevos
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Salud SEO
+          </div>
+          <div class="kpi-value" style="color:#d97706;">72%</div>
+          <div class="kpi-change up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+            +5% esta semana
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts + Competitors -->
+      <div class="charts-row">
+        <div class="panel">
+          <div class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Evolución de Posicionamiento
+            <span style="font-size:12px;color:#9ca3af;font-weight:400;margin-left:auto;">Últimos 30 días</span>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:3px;height:190px;padding:0 4px;">
+            <div class="chart-bar" style="height:38%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:42%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:35%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:48%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:45%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:55%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:52%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:62%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:58%;background:linear-gradient(180deg,#c7d2fe,#eef2ff);"></div>
+            <div class="chart-bar" style="height:68%;background:linear-gradient(180deg,#a5b4fc,#eef2ff);"></div>
+            <div class="chart-bar" style="height:64%;background:linear-gradient(180deg,#a5b4fc,#eef2ff);"></div>
+            <div class="chart-bar" style="height:72%;background:linear-gradient(180deg,#a5b4fc,#eef2ff);"></div>
+            <div class="chart-bar" style="height:70%;background:linear-gradient(180deg,#818cf8,#eef2ff);"></div>
+            <div class="chart-bar" style="height:78%;background:linear-gradient(180deg,#818cf8,#eef2ff);"></div>
+            <div class="chart-bar" style="height:74%;background:linear-gradient(180deg,#818cf8,#eef2ff);"></div>
+            <div class="chart-bar" style="height:82%;background:linear-gradient(180deg,#6366f1,#eef2ff);"></div>
+            <div class="chart-bar" style="height:79%;background:linear-gradient(180deg,#6366f1,#eef2ff);"></div>
+            <div class="chart-bar" style="height:86%;background:linear-gradient(180deg,#6366f1,#eef2ff);"></div>
+            <div class="chart-bar" style="height:84%;background:linear-gradient(180deg,#6366f1,#c7d2fe);"></div>
+            <div class="chart-bar" style="height:90%;background:linear-gradient(180deg,#4f46e5,#a5b4fc);"></div>
+            <div class="chart-bar" style="height:87%;background:linear-gradient(180deg,#4f46e5,#a5b4fc);"></div>
+            <div class="chart-bar" style="height:93%;background:linear-gradient(180deg,#4f46e5,#a5b4fc);"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:#9ca3af;">
+            <span>10 May</span><span>20 May</span><span>30 May</span><span style="font-weight:600;color:#4f46e5;">8 Jun</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;background:#ecfdf5;border-radius:8px;font-size:13px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:#d1fae5;display:flex;align-items:center;justify-content:center;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+            </div>
+            <span style="font-weight:600;color:#065f46;">Mejora +18.5%</span>
+            <span style="color:#6b7280;font-size:12px;">en los últimos 30 días</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Competidores
+            <span style="font-size:12px;color:#9ca3af;font-weight:400;margin-left:auto;">Posición media</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="competitor-row" style="background:#eef2ff;border-radius:8px;">
+              <div class="comp-rank" style="color:#4f46e5;">1</div>
+              <span style="flex:1;font-weight:600;font-size:13px;">Tu web</span>
+              <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:100%;background:linear-gradient(90deg,#6366f1,#818cf8);"></div></div>
+              <strong style="font-size:15px;color:#4f46e5;width:36px;text-align:right;">8.4</strong>
+            </div>
+            <div class="competitor-row">
+              <div class="comp-rank">2</div>
+              <span style="flex:1;font-size:13px;">competidor1.com</span>
+              <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:62%;background:linear-gradient(90deg,#ef4444,#f87171);"></div></div>
+              <strong style="font-size:15px;width:36px;text-align:right;">5.2</strong>
+            </div>
+            <div class="competitor-row">
+              <div class="comp-rank">3</div>
+              <span style="flex:1;font-size:13px;">competidor2.es</span>
+              <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:74%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+              <strong style="font-size:15px;width:36px;text-align:right;">6.8</strong>
+            </div>
+            <div class="competitor-row">
+              <div class="comp-rank">4</div>
+              <span style="flex:1;font-size:13px;">competidor3.com</span>
+              <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:56%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div>
+              <strong style="font-size:15px;width:36px;text-align:right;">9.1</strong>
+            </div>
+            <div class="competitor-row">
+              <div class="comp-rank">5</div>
+              <span style="flex:1;font-size:13px;">competidor4.net</span>
+              <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:42%;background:linear-gradient(90deg,#ec4899,#f472b6);"></div></div>
+              <strong style="font-size:15px;width:36px;text-align:right;">11.3</strong>
+            </div>
+          </div>
+          <div class="alert-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            competidor2.es subió 3 posiciones esta semana
+          </div>
+        </div>
+      </div>
+
+      <!-- Keywords Table -->
+      <div class="panel">
+        <div class="panel-title" style="margin-bottom:12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Keywords Monitorizadas
+          <span style="font-size:12px;color:#9ca3af;font-weight:400;">24 activas</span>
+          <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+            <div style="position:relative;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" style="position:absolute;left:10px;top:8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input placeholder="Buscar keyword..." style="font-size:12px;padding:6px 10px 6px 30px;border:1px solid #e5e7eb;border-radius:8px;width:180px;outline:none;">
+            </div>
+            <button style="font-size:12px;padding:6px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;font-weight:500;display:flex;align-items:center;gap:4px;cursor:pointer;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              Filtros
+            </button>
+          </div>
+        </div>
+        <table class="dash-table">
+          <thead>
+            <tr><th>Keyword</th><th style="text-align:right;">Posición</th><th style="text-align:right;">Cambio</th><th style="text-align:right;">Volumen</th><th style="text-align:right;">Dificultad</th><th style="text-align:right;width:100px;">Tendencia</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span style="font-weight:600;">seo para empresas</span> <span style="color:#9ca3af;font-size:11px;">🟢 top 3</span></td>
+              <td style="text-align:right;font-weight:700;color:#059669;">#3</td>
+              <td style="text-align:right;"><span class="kpi-change up">↑ 2</span></td>
+              <td style="text-align:right;">3.2K</td>
+              <td style="text-align:right;"><span class="kw-tag difficulty-medium">Medio</span></td>
+              <td style="text-align:right;">
+                <svg width="56" height="20" viewBox="0 0 56 20"><polyline points="2,18 20,14 38,10 54,6" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/></svg>
+              </td>
+            </tr>
+            <tr>
+              <td><span style="font-weight:600;">agencia seo barcelona</span></td>
+              <td style="text-align:right;font-weight:700;">#7</td>
+              <td style="text-align:right;"><span style="color:#9ca3af;">— 0</span></td>
+              <td style="text-align:right;">1.8K</td>
+              <td style="text-align:right;"><span class="kw-tag difficulty-hard">Alto</span></td>
+              <td style="text-align:right;">
+                <svg width="56" height="20" viewBox="0 0 56 20"><polyline points="2,12 20,12 38,10 54,11" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round"/></svg>
+              </td>
+            </tr>
+            <tr>
+              <td><span style="font-weight:600;">posicionamiento web</span></td>
+              <td style="text-align:right;font-weight:700;">#12</td>
+              <td style="text-align:right;"><span class="kpi-change up">↑ 4</span></td>
+              <td style="text-align:right;">5.1K</td>
+              <td style="text-align:right;"><span class="kw-tag difficulty-hard">Alto</span></td>
+              <td style="text-align:right;">
+                <svg width="56" height="20" viewBox="0 0 56 20"><polyline points="2,18 20,14 38,10 54,8" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/></svg>
+              </td>
+            </tr>
+            <tr>
+              <td><span style="font-weight:600;">consultor seo freelance</span> <span style="color:#dc2626;font-size:11px;">⚠️ bajando</span></td>
+              <td style="text-align:right;font-weight:700;color:#dc2626;">#18</td>
+              <td style="text-align:right;"><span class="kpi-change down">↓ 5</span></td>
+              <td style="text-align:right;">2.4K</td>
+              <td style="text-align:right;"><span class="kw-tag difficulty-easy">Bajo</span></td>
+              <td style="text-align:right;">
+                <svg width="56" height="20" viewBox="0 0 56 20"><polyline points="2,6 20,10 38,14 54,17" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg>
+              </td>
+            </tr>
+            <tr>
+              <td><span style="font-weight:600;">herramientas seo automaticas</span></td>
+              <td style="text-align:right;font-weight:700;color:#059669;">#9</td>
+              <td style="text-align:right;"><span class="kpi-change up">↑ 1</span></td>
+              <td style="text-align:right;">890</td>
+              <td style="text-align:right;"><span class="kw-tag difficulty-easy">Bajo</span></td>
+              <td style="text-align:right;">
+                <svg width="56" height="20" viewBox="0 0 56 20"><polyline points="2,12 20,10 38,8 54,7" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/></svg>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:#9ca3af;">
+          <span>Mostrando 5 de 24 keywords</span>
+          <div style="display:flex;gap:4px;">
+            <button style="padding:4px 8px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;font-size:11px;">←</button>
+            <button style="padding:4px 8px;border:1px solid #4f46e5;border-radius:5px;background:#eef2ff;color:#4f46e5;font-weight:600;font-size:11px;">1</button>
+            <button style="padding:4px 8px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;font-size:11px;">2</button>
+            <button style="padding:4px 8px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;font-size:11px;">3</button>
+            <button style="padding:4px 8px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;font-size:11px;">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Cambios aplicados (v2):</h3>
+  <ul>
+    <li>✅ <strong>Iconografía SVG moderna</strong> — iconos estilo Lucide en sidebar, KPI cards, header, tabla</li>
+    <li>✅ <strong>Paleta refinada</strong> — indigo (#6366f1) como acento principal, escala de grises neutra</li>
+    <li>✅ <strong>Tarjetas con hover</strong> — sombra sutil al pasar el mouse</li>
+    <li>✅ <strong>Mini gráficas sparkline</strong> — tendencia por keyword en la tabla</li>
+    <li>✅ <strong>Barras de competidores</strong> — visualización horizontal con gradientes</li>
+    <li>✅ <strong>Badges de dificultad</strong> — coloreados (fácil/medio/difícil)</li>
+    <li>✅ <strong>Paginación</strong> — controles abajo de la tabla</li>
+    <li>✅ <strong>Logo con gradiente</strong> — marca moderna en el header</li>
+  </ul>
+</div>
+
+<h3>¿Seguimos con este estilo visual?</h3>
+<p class="subtitle">Ahora podemos definir: paleta de colores final, modo oscuro, tipografía, o pasar al siguiente módulo</p>
+
+<div class="options">
+  <div class="option" data-choice="style-ok" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Seguir con este estilo</h3>
+      <p>Me gusta la iconografía y el look. Pasemos a afinar detalles o al siguiente módulo</p>
+    </div>
+  </div>
+  <div class="option" data-choice="dark-mode" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Muéstrame el modo oscuro</h3>
+      <p>Quiero ver cómo se vería este mismo dashboard en dark mode</p>
+    </div>
+  </div>
+  <div class="option" data-choice="more-polish" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Más ajustes visuales</h3>
+      <p>Quiero cambiar algo más (colores, densidad, tipografía, animaciones...)</p>
+    </div>
+  </div>
+</div>

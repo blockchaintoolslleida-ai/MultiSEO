@@ -1,0 +1,312 @@
+<style>
+  .dash { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  .dash-header { display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:60px;background:#fff;border-bottom:1px solid #e5e7eb; }
+  .dash-logo { display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:#111827; }
+  .logo-mark { width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center; }
+  .dash-badge { background:#6366f1;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;font-weight:600; }
+  .header-icon-btn { width:38px;height:38px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center; }
+  .avatar { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px; }
+  .dash-sidebar { width:240px;min-width:240px;background:#fafbfc;border-right:1px solid #e5e7eb;display:flex;flex-direction:column;padding:8px; }
+  .nav-item { display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#4b5563; }
+  .nav-item:hover { background:#f0f0ff;color:#4f46e5; }
+  .nav-item.active { background:#eef2ff;color:#4f46e5;font-weight:600; }
+  .nav-section { font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:#9ca3af;padding:8px 12px 4px; }
+  .nav-divider { margin:8px 12px;height:1px;background:#e5e7eb; }
+  .tenant-badge { display:flex;align-items:center;gap:6px;padding:8px 12px;margin-top:auto;border-radius:8px;background:#eef2ff;font-size:13px;font-weight:500;color:#4f46e5; }
+  .dash-content { flex:1;background:#f5f6f8;padding:24px;overflow-y:auto; }
+  .page-title { font-size:22px;font-weight:700;color:#111827;display:flex;align-items:center;gap:10px; }
+  .btn-primary { padding:9px 18px;background:#4f46e5;color:#fff;border:none;border-radius:9px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer; }
+  .btn-outline { padding:8px 16px;background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:8px;font-weight:500;font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer; }
+  .btn-outline:hover { background:#f9fafb; }
+  .panel { background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px 24px; }
+  .panel-title { font-size:15px;font-weight:600;color:#111827;display:flex;align-items:center;gap:8px;margin-bottom:16px; }
+  .two-col { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px; }
+  .three-col { display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px; }
+  .report-card { background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;transition:box-shadow 0.2s; }
+  .report-card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.06); }
+  .report-preview { background:#f9fafb;padding:24px;position:relative;border-bottom:1px solid #e5e7eb;min-height:200px; }
+  .report-pdf-mock { background:#fff;max-width:280px;margin:0 auto;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-radius:4px;overflow:hidden; }
+  .pdf-header { background:linear-gradient(135deg,#1e1b4b,#312e81);padding:16px 20px;color:#fff; }
+  .pdf-client { font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px; }
+  .pdf-title { font-size:16px;font-weight:700;margin:4px 0 0; }
+  .pdf-period { font-size:10px;opacity:0.6;margin-top:2px; }
+  .pdf-body { padding:14px 20px; }
+  .pdf-metric-row { display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:10px; }
+  .pdf-metric-label { color:#6b7280; }
+  .pdf-metric-value { font-weight:700;color:#111827; }
+  .pdf-chart-mini { display:flex;align-items:flex-end;gap:2px;height:40px;margin:10px 0;padding:0 4px; }
+  .pdf-bar { flex:1;background:linear-gradient(180deg,#6366f1,#c7d2fe);border-radius:2px 2px 0 0; }
+  .pdf-footer { padding:10px 20px;font-size:8px;color:#9ca3af;border-top:1px solid #f3f4f6;text-align:center; }
+  .report-body { padding:20px; }
+  .report-name { font-weight:700;font-size:15px;color:#111827;display:flex;align-items:center;gap:8px; }
+  .report-meta { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+  .meta-tag { font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500; }
+  .tag-scheduled { background:#eef2ff;color:#4f46e5; }
+  .tag-sent { background:#ecfdf5;color:#065f46; }
+  .tag-draft { background:#fef3c7;color:#92400e; }
+  .tag-monthly { background:#ede9fe;color:#6d28d9; }
+  .report-actions { display:flex;gap:8px;margin-top:12px; }
+  .action-btn { flex:1;padding:7px 0;border-radius:7px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#374151;display:flex;align-items:center;justify-content:center;gap:4px; }
+  .action-btn:hover { background:#f9fafb; }
+  .action-btn.primary { background:#4f46e5;border-color:#4f46e5;color:#fff; }
+  .action-btn.primary:hover { background:#4338ca; }
+  .schedule-bar { display:flex;align-items:center;gap:12px;padding:14px 18px;background:#f9fafb;border-radius:10px;margin-top:12px; }
+  .toggle-switch { width:44px;height:24px;background:#d1d5db;border-radius:99px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0; }
+  .toggle-switch.on { background:#6366f1; }
+  .toggle-switch::after { content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+  .toggle-switch.on::after { left:22px; }
+  .preview-stripe { display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f9fafb;border-radius:8px;margin-bottom:8px;font-size:12.5px; }
+  .preview-stripe .dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+  .share-link-box { display:flex;align-items:center;gap:0;margin-top:12px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden; }
+  .share-link-input { flex:1;padding:8px 12px;border:none;font-size:12px;color:#374151;background:#f9fafb; }
+  .share-link-copy { padding:8px 14px;background:#4f46e5;color:#fff;border:none;font-weight:600;font-size:11px;cursor:pointer; }
+  .empty-state { text-align:center;padding:40px 20px;color:#9ca3af; }
+</style>
+
+<div class="dash">
+  <!-- HEADER -->
+  <div class="dash-header">
+    <div class="dash-logo"><div class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>MultiSEO</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="header-icon-btn" style="position:relative;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg><div class="dash-badge" style="position:absolute;top:-4px;right:-4px;font-size:10px;">3</div></div>
+      <div style="display:flex;align-items:center;gap:8px;"><div class="avatar">JD</div><span style="font-size:13.5px;font-weight:500;color:#374151;">Juan Díaz</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;min-height:calc(100vh - 60px);">
+    <!-- SIDEBAR -->
+    <div class="dash-sidebar">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</div>
+      <div class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Websites</div>
+      <div class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Artículos</div>
+      <div class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Rankings</div>
+      <div class="nav-divider"></div>
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Reportes</div>
+      <div class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>Competidores</div>
+      <div class="nav-divider"></div>
+      <div class="tenant-badge"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/></svg>Demo Company<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto;"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="dash-content">
+      <!-- Breadcrumb + Header -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#9ca3af;margin-bottom:6px;">
+            <span style="color:#4f46e5;display:flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Demo Company</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <span style="color:#374151;font-weight:500;">Reportes</span>
+          </div>
+          <div class="page-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reportes para Clientes</div>
+        </div>
+        <button class="btn-primary"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Generar Nuevo Reporte</button>
+      </div>
+
+      <!-- Three Report Cards with PDF Preview -->
+      <div class="three-col">
+        <!-- Report 1: June Monthly (Scheduled) -->
+        <div class="report-card">
+          <div class="report-preview">
+            <div class="report-pdf-mock">
+              <div class="pdf-header">
+                <div class="pdf-client">Demo Company</div>
+                <div class="pdf-title">Informe SEO Mensual</div>
+                <div class="pdf-period">Junio 2026 · sitioweb.com</div>
+              </div>
+              <div class="pdf-body">
+                <div class="pdf-metric-row"><span class="pdf-metric-label">Posición Media</span><span class="pdf-metric-value" style="color:#059669;">8.4 ↑</span></div>
+                <div class="pdf-metric-row"><span class="pdf-metric-label">Tráfico Estimado</span><span class="pdf-metric-value">24.8K</span></div>
+                <div class="pdf-metric-row"><span class="pdf-metric-label">Backlinks</span><span class="pdf-metric-value">1,204</span></div>
+                <div class="pdf-chart-mini"><div class="pdf-bar" style="height:40%"></div><div class="pdf-bar" style="height:55%"></div><div class="pdf-bar" style="height:48%"></div><div class="pdf-bar" style="height:65%"></div><div class="pdf-bar" style="height:60%"></div><div class="pdf-bar" style="height:72%"></div><div class="pdf-bar" style="height:68%"></div><div class="pdf-bar" style="height:80%"></div><div class="pdf-bar" style="height:75%"></div><div class="pdf-bar" style="height:85%"></div><div class="pdf-bar" style="height:82%"></div><div class="pdf-bar" style="height:90%"></div></div>
+              </div>
+              <div class="pdf-footer">Generado por MultiSEO · 10/06/2026</div>
+            </div>
+          </div>
+          <div class="report-body">
+            <div class="report-name">Informe Mensual — Junio 2026</div>
+            <div class="report-meta">
+              <span class="meta-tag tag-scheduled"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Programado</span>
+              <span class="meta-tag tag-monthly">Mensual</span>
+            </div>
+            <div class="schedule-bar">
+              <div class="toggle-switch on"></div>
+              <div style="font-size:12px;color:#374151;">Envío automático: <strong>día 1 de cada mes</strong></div>
+            </div>
+            <div class="report-actions">
+              <button class="action-btn primary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>Descargar PDF</button>
+              <button class="action-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg>Compartir</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report 2: Weekly (Sent) -->
+        <div class="report-card">
+          <div class="report-preview">
+            <div class="report-pdf-mock">
+              <div class="pdf-header" style="background:linear-gradient(135deg,#065f46,#059669);">
+                <div class="pdf-client">Demo Company</div>
+                <div class="pdf-title">Informe SEO Semanal</div>
+                <div class="pdf-period">Semana 23 · 2-8 Jun · mitiendaonline.es</div>
+              </div>
+              <div class="pdf-body">
+                <div class="pdf-metric-row"><span class="pdf-metric-label">Keywords Top 10</span><span class="pdf-metric-value" style="color:#059669;">8/16</span></div>
+                <div class="pdf-metric-row"><span class="pdf-metric-label">Artículos Publicados</span><span class="pdf-metric-value">2</span></div>
+                <div class="pdf-metric-row"><span class="pdf-metric-label">Mejora Semanal</span><span class="pdf-metric-value" style="color:#059669;">+2.3%</span></div>
+                <div style="margin-top:8px;font-size:10px;color:#9ca3af;">✅ 3 keywords subieron · ⚠️ 1 keyword bajó</div>
+              </div>
+              <div class="pdf-footer">Generado por MultiSEO · 09/06/2026</div>
+            </div>
+          </div>
+          <div class="report-body">
+            <div class="report-name">Informe Semanal — Semana 23</div>
+            <div class="report-meta">
+              <span class="meta-tag tag-sent"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Enviado</span>
+              <span class="meta-tag tag-scheduled">Semanal</span>
+            </div>
+            <div class="schedule-bar">
+              <div class="toggle-switch on"></div>
+              <div style="font-size:12px;color:#374151;">Envío automático: <strong>cada lunes 08:00</strong></div>
+            </div>
+            <div class="report-actions">
+              <button class="action-btn primary">Descargar PDF</button>
+              <button class="action-btn">Compartir</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report 3: Draft / Custom -->
+        <div class="report-card">
+          <div class="report-preview" style="display:flex;align-items:center;justify-content:center;">
+            <div style="text-align:center;">
+              <div style="width:48px;height:48px;border-radius:12px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <p style="font-weight:600;color:#6b7280;margin:0;font-size:13px;">Reporte rápido</p>
+              <p style="font-size:11px;color:#9ca3af;margin:4px 0 0;">Personaliza fechas y métricas</p>
+            </div>
+          </div>
+          <div class="report-body">
+            <div class="report-name">Nuevo Reporte Personalizado</div>
+            <div class="report-meta">
+              <span class="meta-tag tag-draft">Borrador</span>
+            </div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+              <div class="preview-stripe"><div class="dot" style="background:#6366f1;"></div>Seleccionar rango de fechas</div>
+              <div class="preview-stripe"><div class="dot" style="background:#d1d5db;"></div>Elegir métricas a incluir</div>
+              <div class="preview-stripe"><div class="dot" style="background:#d1d5db;"></div>Personalizar branding</div>
+              <div class="preview-stripe"><div class="dot" style="background:#d1d5db;"></div>Vista previa y enviar</div>
+            </div>
+            <div class="report-actions" style="margin-top:16px;">
+              <button class="action-btn primary">Configurar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Share & Settings -->
+      <div class="two-col">
+        <!-- Share Links -->
+        <div class="panel">
+          <div class="panel-title">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Enlaces Compartidos Activos
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f9fafb;border-radius:8px;">
+              <div>
+                <div style="font-weight:600;font-size:13px;color:#111827;">Informe Mensual Junio</div>
+                <div style="font-size:11px;color:#9ca3af;">/report/demo/june-2026 · Expira en 13 días</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="action-btn" style="padding:5px 10px;font-size:11px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copiar</button>
+                <button class="action-btn" style="padding:5px 10px;font-size:11px;color:#dc2626;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f9fafb;border-radius:8px;">
+              <div>
+                <div style="font-weight:600;font-size:13px;color:#111827;">Informe Semanal W23</div>
+                <div style="font-size:11px;color:#9ca3af;">/report/demo/week-23 · Expira en 4 días</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="action-btn" style="padding:5px 10px;font-size:11px;">Copiar</button>
+                <button class="action-btn" style="padding:5px 10px;font-size:11px;color:#dc2626;">✕</button>
+              </div>
+            </div>
+          </div>
+          <div class="share-link-box">
+            <input class="share-link-input" value="https://multiseo.app/report/demo/june-2026?token=eyJhbG..." readonly>
+            <button class="share-link-copy">Copiar enlace</button>
+          </div>
+        </div>
+
+        <!-- Branding Settings -->
+        <div class="panel">
+          <div class="panel-title">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Personalización de Marca
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <div class="form-label" style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Logo del cliente</div>
+              <div style="padding:16px;border:2px dashed #d1d5db;border-radius:8px;text-align:center;cursor:pointer;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <div style="font-size:11px;color:#9ca3af;margin-top:6px;">Subir logo</div>
+              </div>
+            </div>
+            <div>
+              <div class="form-label" style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Color de marca</div>
+              <div style="display:flex;gap:6px;">
+                <div style="width:28px;height:28px;border-radius:7px;background:#4f46e5;border:3px solid #6366f1;"></div>
+                <div style="width:28px;height:28px;border-radius:7px;background:#059669;"></div>
+                <div style="width:28px;height:28px;border-radius:7px;background:#ea580c;"></div>
+                <div style="width:28px;height:28px;border-radius:7px;background:#dc2626;"></div>
+                <div style="width:28px;height:28px;border-radius:7px;background:#7c3aed;"></div>
+                <div style="width:28px;height:28px;border-radius:7px;background:#d1d5db;display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <div class="form-label" style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Texto del footer</div>
+            <input class="share-link-input" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;" value="© 2026 Demo Company — Reporte generado por MultiSEO">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Diseño del Panel de Reportes:</h3>
+  <ul>
+    <li><strong>3 tarjetas de reporte</strong> con previsualización realista del PDF (mini mockup)</li>
+    <li><strong>PDF mockup</strong>: cabecera con gradiente, KPIs, mini gráfica de barras, footer</li>
+    <li><strong>Toggle de programación</strong>: envío automático mensual (día 1) o semanal (lunes 08:00)</li>
+    <li><strong>Badges de estado</strong>: Programado (azul), Enviado (verde), Borrador (ámbar)</li>
+    <li><strong>Enlaces compartidos</strong>: URLs con token temporal, botón copiar, fecha de expiración</li>
+    <li><strong>Personalización de marca</strong>: logo del cliente, color corporativo, texto footer</li>
+    <li><strong>Reporte personalizado</strong>: wizard paso a paso (fechas → métricas → branding → enviar)</li>
+    <li>Acciones: Descargar PDF, Compartir enlace, Configurar envío automático</li>
+  </ul>
+</div>
+
+<h3>¿Qué te parece?</h3>
+<p class="subtitle">Este es el último módulo visual. Después consolidamos todo en el diseño final</p>
+
+<div class="options">
+  <div class="option" data-choice="reports-ok" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Me gusta — consolidar diseño final</h3>
+      <p>Los 4 paneles están listos. Escribamos la especificación completa</p>
+    </div>
+  </div>
+  <div class="option" data-choice="reports-adjust" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Ajustes finales</h3>
+      <p>Algún detalle que cambiar antes de cerrar el diseño</p>
+    </div>
+  </div>
+</div>
