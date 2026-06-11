@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       brandColor,
     });
 
-    return new Response(pdf, {
+    return new Response(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="report-${Date.now()}.pdf"`,
