@@ -1,4 +1,26 @@
 import { DeepSeekGEOProvider } from "@/lib/geo/providers/deepseek";
+import { ChatGPTGEOProvider } from "@/lib/geo/providers/chatgpt";
+import { PerplexityGEOProvider } from "@/lib/geo/providers/perplexity";
+import { GoogleAIGEOProvider } from "@/lib/geo/providers/google";
+import { CopilotGEOProvider } from "@/lib/geo/providers/copilot";
+import type { GEOProvider } from "@/lib/geo/types";
+
+function getProvider(provider: string, apiKey: string): GEOProvider {
+  switch (provider) {
+    case "deepseek":
+      return new DeepSeekGEOProvider({ apiKey });
+    case "chatgpt":
+      return new ChatGPTGEOProvider({ apiKey });
+    case "perplexity":
+      return new PerplexityGEOProvider({ apiKey });
+    case "google":
+      return new GoogleAIGEOProvider({ apiKey });
+    case "copilot":
+      return new CopilotGEOProvider({ apiKey });
+    default:
+      throw new Error(`Provider "${provider}" no soportado. Usa: deepseek, chatgpt, perplexity, google, copilot`);
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -11,23 +33,17 @@ export async function POST(request: Request) {
 
     const start = Date.now();
 
-    // For now only DeepSeek is implemented. When more providers are added,
-    // use the factory pattern or switch based on provider name.
-    if (provider === "deepseek") {
-      const deepseek = new DeepSeekGEOProvider({ apiKey });
-      const available = await deepseek.isAvailable();
-      const latency = Date.now() - start;
+    const instance = getProvider(provider, apiKey);
+    const available = await instance.isAvailable();
+    const latency = Date.now() - start;
 
-      if (available) {
-        return Response.json({ data: { ok: true, latency } });
-      } else {
-        return Response.json({ data: { ok: false, error: "API key inválida o servicio no disponible" } });
-      }
+    if (available) {
+      return Response.json({ data: { ok: true, latency, provider: instance.name } });
+    } else {
+      return Response.json({
+        data: { ok: false, error: `API key inválida o servicio no disponible para ${instance.name}` },
+      });
     }
-
-    return Response.json({
-      data: { ok: false, error: `Provider "${provider}" no implementado aún` },
-    });
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Test failed";
     return Response.json({ data: { ok: false, error: msg } });
