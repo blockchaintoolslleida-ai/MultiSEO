@@ -1,6 +1,7 @@
 import { db } from "./index";
 import { tenants, websites, keywords, competitors, rankingHistory, articles, reports, notifications, geoQueries, geoResults } from "./schema";
 import { eq } from "drizzle-orm";
+import { hashPassword } from "@/lib/auth";
 
 function seed() {
   db.transaction((tx) => {
@@ -18,8 +19,8 @@ function seed() {
 
     // Insert tenants
     tx.insert(tenants).values([
-      { id: "demo", name: "Demo Company", slug: "demo-company", createdAt: new Date().toISOString() },
-      { id: "acme", name: "Acme Corp", slug: "acme-corp", createdAt: new Date().toISOString() },
+      { id: "demo", name: "Demo Company", slug: "demo-company", passwordHash: hashPassword("demo"), createdAt: new Date().toISOString() },
+      { id: "acme", name: "Acme Corp", slug: "acme-corp", passwordHash: hashPassword("acme"), createdAt: new Date().toISOString() },
     ]).run();
 
     const demoId = "demo";

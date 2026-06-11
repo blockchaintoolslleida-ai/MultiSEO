@@ -122,6 +122,9 @@ try {
   if (!tenantCols.includes("gsc_connected")) {
     sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_connected INTEGER NOT NULL DEFAULT 0");
   }
+  if (!tenantCols.includes("password_hash")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN password_hash TEXT");
+  }
   if (!tenantCols.includes("telegram_bot_token")) {
     sqlite.exec("ALTER TABLE tenants ADD COLUMN telegram_bot_token TEXT");
   }
