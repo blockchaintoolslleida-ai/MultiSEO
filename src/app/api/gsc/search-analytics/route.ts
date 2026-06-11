@@ -140,10 +140,14 @@ export async function POST(request: Request) {
           id: crypto.randomUUID(),
           websiteId,
           rank: i + 1,
-          domain: `competidor-${i + 1}.com`, // Real competitor domains require extra API call
+          domain: `competidor-${i + 1}.com`,
           avgPosition: topKws[i].position,
           trend: "flat",
           highlightChange: 0,
+          keywordsOverlap: "[]",
+          trafficEstimate: 0,
+          isManual: 0,
+          lastUpdated: new Date().toISOString(),
         })
         .run();
     }

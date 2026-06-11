@@ -188,11 +188,39 @@ function seed() {
 
     let compCounter = 0;
     for (const [wid, comps] of Object.entries(websiteCompetitors)) {
+      // Get keywords for this website to build overlap references
+      const siteKeywords = websiteKeywords[wid] ?? [];
       for (let i = 0; i < comps.length; i++) {
         compCounter++;
+        // Simulate keyword overlap: each competitor "shares" 1-2 keywords with the target site
+        const overlapKwIds: string[] = [];
+        if (siteKeywords.length > 0) {
+          const overlapCount = Math.min(1 + (i % 2), siteKeywords.length);
+          for (let j = 0; j < overlapCount; j++) {
+            const kwIdx = (i + j) % siteKeywords.length;
+            // Find this keyword's ID by matching against what was inserted
+            const kwId = `k${Object.keys(websiteKeywords).indexOf(wid) + (i % siteKeywords.length) + j}`;
+            // Simpler: use first N keyword IDs for this website
+            // We need to compute the base kwCounter for this website
+            // Actually, let's just use domain + index as a reference
+            overlapKwIds.push(`kw-${wid}-${kwIdx}`);
+          }
+        }
+        // Traffic estimate based on position (lower position = more traffic)
+        const trafficEst = Math.round((15 - comps[i].pos) * 250 + Math.random() * 500);
+
         tx.insert(competitors).values({
-          id: `c${compCounter}`, websiteId: wid, rank: i + 1, domain: comps[i].domain,
-          avgPosition: comps[i].pos, trend: comps[i].trend, highlightChange: comps[i].highlight,
+          id: `c${compCounter}`,
+          websiteId: wid,
+          rank: i + 1,
+          domain: comps[i].domain,
+          avgPosition: comps[i].pos,
+          trend: comps[i].trend,
+          highlightChange: comps[i].highlight,
+          keywordsOverlap: JSON.stringify(overlapKwIds),
+          trafficEstimate: trafficEst,
+          isManual: 0,
+          lastUpdated: new Date().toISOString(),
         }).run();
       }
     }
