@@ -29,7 +29,7 @@ export function CompetitorComparator({
   };
 
   const selected = competitors.filter((c) => selectedIds.has(c.id));
-  const columns = [
+  const columns: { domain: string; avgPosition: number; isYou: boolean; id?: string; trafficEstimate?: number }[] = [
     { domain: yourDomain, avgPosition: yourPosition, isYou: true },
     ...selected.map((c) => ({
       domain: c.domain,
