@@ -16,8 +16,8 @@ export const NAV_SECTIONS: NavSectionData[] = [
   {
     title: "Analytics",
     items: [
-      { label: "Reportes", href: "/reports", icon: "BarChart3" },
       { label: "Competidores", href: "/competitors", icon: "Monitor" },
+      { label: "Reportes", href: "/reports", icon: "BarChart3" },
     ],
   },
   {
