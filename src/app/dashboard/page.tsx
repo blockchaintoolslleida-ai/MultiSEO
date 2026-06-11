@@ -15,9 +15,16 @@ interface GSCStatus {
   hasRefreshToken: boolean;
 }
 
+interface WebsiteOption {
+  id: string;
+  domain: string;
+}
+
 export default function DashboardPage() {
   const { tenant } = useTenant();
-  const { data, loading, refetch } = useApi<SEODashboardData>("/api/dashboard?websiteId=1");
+  const [websiteId, setWebsiteId] = useState("1");
+  const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
+  const { data, loading, refetch } = useApi<SEODashboardData>(`/api/dashboard?websiteId=${websiteId}`);
   const [scraping, setScraping] = useState(false);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [scrapeResult, setScrapeResult] = useState<string | null>(null);
@@ -43,6 +50,21 @@ export default function DashboardPage() {
   useEffect(() => {
     checkGSCStatus();
   }, [checkGSCStatus]);
+
+  // Fetch websites list for the selector
+  useEffect(() => {
+    if (!tenant) return;
+    fetch(`/api/websites?tenantId=${tenant.id}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.data) {
+          setWebsitesList(json.data.map((w: any) => ({ id: w.id, domain: w.domain })));
+          // Auto-select first real website
+          if (json.data.length > 0) setWebsiteId(json.data[0].id);
+        }
+      })
+      .catch(() => {});
+  }, [tenant]);
 
   const handleConnectGSC = async () => {
     try {
@@ -98,7 +120,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/keywords/scrape", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ websiteId: "1" }),
+        body: JSON.stringify({ websiteId }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Scraping failed");
@@ -160,7 +182,20 @@ export default function DashboardPage() {
         <span className="text-gray-700 font-medium">Dashboard SEO</span>
       </div>
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-[22px] font-bold text-gray-900">SEO Dashboard</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-[22px] font-bold text-gray-900">SEO Dashboard</h1>
+          {websitesList.length > 1 && (
+            <select
+              value={websiteId}
+              onChange={(e) => setWebsiteId(e.target.value)}
+              className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 font-medium focus:outline-none focus:border-brand-400"
+            >
+              {websitesList.map((w) => (
+                <option key={w.id} value={w.id}>{w.domain}</option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {gscResult && <span className="text-xs text-green-600">{gscResult}</span>}
           {gscError && <span className="text-xs text-red-500">{gscError}</span>}
