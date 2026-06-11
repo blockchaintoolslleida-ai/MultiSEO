@@ -122,6 +122,12 @@ try {
   if (!tenantCols.includes("gsc_connected")) {
     sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_connected INTEGER NOT NULL DEFAULT 0");
   }
+  if (!tenantCols.includes("telegram_bot_token")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN telegram_bot_token TEXT");
+  }
+  if (!tenantCols.includes("telegram_chat_id")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN telegram_chat_id TEXT");
+  }
 
   console.log("Tables created successfully");
 } catch (error) {

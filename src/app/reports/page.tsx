@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
 import type { ReportData } from "@/types/seo";
@@ -22,7 +23,32 @@ export default function ReportsPage() {
   const { data: stats, loading: sLoading } = useApi<ReportStats>(
     tenant ? `/api/reports/stats?tenantId=${tenant.id}` : ""
   );
+  const [exporting, setExporting] = useState(false);
+
   const loading = rLoading || sLoading || !tenant;
+
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/reports/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ websiteId: "1", title: `Reporte SEO — ${tenant?.name ?? ""}` }),
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `reporte-multiseo-${Date.now()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silently fail
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -53,10 +79,20 @@ export default function ReportsPage() {
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Reportes para Clientes
         </h1>
-        <button className="px-4 py-2.5 bg-brand-600 text-white rounded-lg text-[13px] font-semibold flex items-center gap-1.5 hover:bg-brand-700">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Generar Nuevo Reporte
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportPDF}
+            disabled={exporting}
+            className="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            {exporting ? "Exportando..." : "Exportar PDF"}
+          </button>
+          <button className="px-4 py-2.5 bg-brand-600 text-white rounded-lg text-[13px] font-semibold flex items-center gap-1.5 hover:bg-brand-700">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Generar Nuevo Reporte
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-4 gap-3 mb-5">
         {[

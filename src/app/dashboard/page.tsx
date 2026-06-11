@@ -25,6 +25,9 @@ export default function DashboardPage() {
   const [gscSyncing, setGscSyncing] = useState(false);
   const [gscError, setGscError] = useState<string | null>(null);
   const [gscResult, setGscResult] = useState<string | null>(null);
+  const [auditing, setAuditing] = useState(false);
+  const [auditResult, setAuditResult] = useState<string | null>(null);
+  const [auditError, setAuditError] = useState<string | null>(null);
 
   const checkGSCStatus = useCallback(async () => {
     if (!tenant) return;
@@ -108,6 +111,29 @@ export default function DashboardPage() {
     }
   };
 
+  const handleAudit = async () => {
+    setAuditing(true);
+    setAuditError(null);
+    setAuditResult(null);
+    try {
+      const domain = data?.websiteUrl ?? "example.com";
+      const res = await fetch("/api/lighthouse/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: `https://${domain}` }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Audit failed");
+      const s = json.data.scores;
+      setAuditResult(`Health ${Math.round((s.performance + s.accessibility + s.bestPractices + s.seo) / 4)}% · Perf ${s.performance} · SEO ${s.seo}`);
+      refetch();
+    } catch (err) {
+      setAuditError(err instanceof Error ? err.message : "Error");
+    } finally {
+      setAuditing(false);
+    }
+  };
+
   if (loading || !data) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
@@ -138,6 +164,8 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           {gscResult && <span className="text-xs text-green-600">{gscResult}</span>}
           {gscError && <span className="text-xs text-red-500">{gscError}</span>}
+          {auditResult && <span className="text-xs text-purple-600">{auditResult}</span>}
+          {auditError && <span className="text-xs text-red-500">{auditError}</span>}
           {scrapeResult && <span className="text-xs text-green-600">{scrapeResult}</span>}
           {scrapeError && <span className="text-xs text-red-500">{scrapeError}</span>}
 
@@ -174,6 +202,16 @@ export default function DashboardPage() {
               <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
             </svg>
             {scraping ? "Actualizando..." : "Actualizar Rankings"}
+          </button>
+          <button
+            onClick={handleAudit}
+            disabled={auditing}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={auditing ? "animate-spin" : ""}>
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            {auditing ? "Auditando..." : "Auditar SEO"}
           </button>
         </div>
       </div>

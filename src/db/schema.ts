@@ -9,6 +9,8 @@ export const tenants = sqliteTable("tenants", {
   gscAccessToken: text("gsc_access_token"),
   gscSiteUrl: text("gsc_site_url"),
   gscConnected: integer("gsc_connected").notNull().default(0),
+  telegramBotToken: text("telegram_bot_token"),
+  telegramChatId: text("telegram_chat_id"),
   createdAt: text("created_at").notNull().default(""),
 });
 
