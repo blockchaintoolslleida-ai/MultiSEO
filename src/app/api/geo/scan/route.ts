@@ -59,6 +59,9 @@ export async function POST(request: Request) {
     let totalSentiment = 0;
     let sentimentCount = 0;
 
+    // Use same timestamp for all results in this scan batch
+    const scanTimestamp = new Date().toISOString();
+
     for (const gq of queries) {
       for (const provider of providers) {
         try {
@@ -69,7 +72,6 @@ export async function POST(request: Request) {
           });
 
           const id = crypto.randomUUID();
-          const now = new Date().toISOString();
 
           db.insert(geoResults)
             .values({
@@ -83,7 +85,7 @@ export async function POST(request: Request) {
               snippet: result.snippet,
               competitorsMentioned: JSON.stringify(result.competitorsMentioned),
               responseFull: result.fullResponse,
-              scannedAt: now,
+              scannedAt: scanTimestamp,
             })
             .run();
 
