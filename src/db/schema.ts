@@ -54,6 +54,10 @@ export const competitors = sqliteTable("competitors", {
   avgPosition: real("avg_position").notNull(),
   trend: text("trend").notNull().default("flat"),
   highlightChange: integer("highlight_change").notNull().default(0),
+  keywordsOverlap: text("keywords_overlap").notNull().default("[]"),
+  trafficEstimate: integer("traffic_estimate").notNull().default(0),
+  isManual: integer("is_manual").notNull().default(0),
+  lastUpdated: text("last_updated").notNull().default(""),
 });
 
 export const rankingHistory = sqliteTable("ranking_history", {

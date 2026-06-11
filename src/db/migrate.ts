@@ -135,6 +135,21 @@ try {
     sqlite.exec("ALTER TABLE tenants ADD COLUMN geo_enabled_providers TEXT");
   }
 
+  // Competitors new columns
+  const compCols = sqlite.pragma("table_info(competitors)").map((c: any) => c.name);
+  if (!compCols.includes("keywords_overlap")) {
+    sqlite.exec("ALTER TABLE competitors ADD COLUMN keywords_overlap TEXT NOT NULL DEFAULT '[]'");
+  }
+  if (!compCols.includes("traffic_estimate")) {
+    sqlite.exec("ALTER TABLE competitors ADD COLUMN traffic_estimate INTEGER NOT NULL DEFAULT 0");
+  }
+  if (!compCols.includes("is_manual")) {
+    sqlite.exec("ALTER TABLE competitors ADD COLUMN is_manual INTEGER NOT NULL DEFAULT 0");
+  }
+  if (!compCols.includes("last_updated")) {
+    sqlite.exec("ALTER TABLE competitors ADD COLUMN last_updated TEXT NOT NULL DEFAULT ''");
+  }
+
   // GEO tables
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS geo_queries (
