@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
 import type { SEODashboardData } from "@/types/seo";
@@ -9,12 +9,83 @@ import { RankingChart } from "@/components/seo/ranking-chart";
 import { CompetitorPanel } from "@/components/seo/competitor-panel";
 import { KeywordsTable } from "@/components/seo/keywords-table";
 
+interface GSCStatus {
+  connected: boolean;
+  siteUrl: string;
+  hasRefreshToken: boolean;
+}
+
 export default function DashboardPage() {
   const { tenant } = useTenant();
   const { data, loading, refetch } = useApi<SEODashboardData>("/api/dashboard?websiteId=1");
   const [scraping, setScraping] = useState(false);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [scrapeResult, setScrapeResult] = useState<string | null>(null);
+  const [gscStatus, setGscStatus] = useState<GSCStatus | null>(null);
+  const [gscSyncing, setGscSyncing] = useState(false);
+  const [gscError, setGscError] = useState<string | null>(null);
+  const [gscResult, setGscResult] = useState<string | null>(null);
+
+  const checkGSCStatus = useCallback(async () => {
+    if (!tenant) return;
+    try {
+      const res = await fetch(`/api/gsc/status?tenantId=${tenant.id}`);
+      const json = await res.json();
+      if (res.ok) setGscStatus(json.data);
+    } catch {
+      // GSC not configured
+    }
+  }, [tenant]);
+
+  useEffect(() => {
+    checkGSCStatus();
+  }, [checkGSCStatus]);
+
+  const handleConnectGSC = async () => {
+    try {
+      const res = await fetch(`/api/gsc/auth?tenantId=${tenant?.id ?? ""}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+      // Open OAuth URL in popup
+      const popup = window.open(json.data.authUrl, "gsc-auth", "width=600,height=700");
+      if (!popup) {
+        // Fallback: open in same window
+        window.location.href = authUrl.toString();
+        return;
+      }
+      // Poll for popup close
+      const interval = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(interval);
+          checkGSCStatus();
+        }
+      }, 500);
+    } catch (err) {
+      setGscError(err instanceof Error ? err.message : "Error");
+    }
+  };
+
+  const handleGSCSync = async () => {
+    if (!tenant) return;
+    setGscSyncing(true);
+    setGscError(null);
+    setGscResult(null);
+    try {
+      const res = await fetch("/api/gsc/search-analytics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId: tenant.id, websiteId: "1" }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "GSC sync failed");
+      setGscResult(`${json.data.keywordsImported} keywords importadas de GSC`);
+      refetch();
+    } catch (err) {
+      setGscError(err instanceof Error ? err.message : "Error");
+    } finally {
+      setGscSyncing(false);
+    }
+  };
 
   const handleScrape = async () => {
     setScraping(true);
@@ -65,8 +136,35 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-[22px] font-bold text-gray-900">SEO Dashboard</h1>
         <div className="flex items-center gap-2">
+          {gscResult && <span className="text-xs text-green-600">{gscResult}</span>}
+          {gscError && <span className="text-xs text-red-500">{gscError}</span>}
           {scrapeResult && <span className="text-xs text-green-600">{scrapeResult}</span>}
           {scrapeError && <span className="text-xs text-red-500">{scrapeError}</span>}
+
+          {/* GSC Connect / Sync Button */}
+          {gscStatus?.connected ? (
+            <button
+              onClick={handleGSCSync}
+              disabled={gscSyncing}
+              className="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-blue-100 disabled:opacity-50"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={gscSyncing ? "animate-spin" : ""}>
+                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              {gscSyncing ? "Sincronizando GSC..." : "Sincronizar GSC"}
+            </button>
+          ) : (
+            <button
+              onClick={handleConnectGSC}
+              className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-gray-50"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><circle cx="9" cy="9" r="3"/><circle cx="15" cy="9" r="2.5"/><path d="M17.5 19.5c0-3.5-2.46-5.5-5.5-5.5s-5.5 2-5.5 5.5"/>
+              </svg>
+              Conectar GSC
+            </button>
+          )}
+
           <button
             onClick={handleScrape}
             disabled={scraping}

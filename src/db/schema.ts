@@ -5,6 +5,10 @@ export const tenants = sqliteTable("tenants", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   deepseekApiKey: text("deepseek_api_key"),
+  gscRefreshToken: text("gsc_refresh_token"),
+  gscAccessToken: text("gsc_access_token"),
+  gscSiteUrl: text("gsc_site_url"),
+  gscConnected: integer("gsc_connected").notNull().default(0),
   createdAt: text("created_at").notNull().default(""),
 });
 

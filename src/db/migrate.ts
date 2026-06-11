@@ -108,6 +108,21 @@ try {
     );
   `);
 
+  // GSC columns (add if not exist — SQLite doesn't support IF NOT EXISTS for ALTER)
+  const tenantCols = sqlite.pragma("table_info(tenants)").map((c: any) => c.name);
+  if (!tenantCols.includes("gsc_refresh_token")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_refresh_token TEXT");
+  }
+  if (!tenantCols.includes("gsc_access_token")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_access_token TEXT");
+  }
+  if (!tenantCols.includes("gsc_site_url")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_site_url TEXT");
+  }
+  if (!tenantCols.includes("gsc_connected")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_connected INTEGER NOT NULL DEFAULT 0");
+  }
+
   console.log("Tables created successfully");
 } catch (error) {
   console.error("Migration failed:", error);
