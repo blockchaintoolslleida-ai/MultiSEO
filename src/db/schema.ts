@@ -29,6 +29,7 @@ export const websites = sqliteTable("websites", {
   backlinksCount: integer("backlinks_count").notNull().default(0),
   healthScore: integer("health_score").notNull().default(0),
   lastAudit: text("last_audit").notNull().default(""),
+  lastGscSync: text("last_gsc_sync"),
   errorMessage: text("error_message"),
   createdAt: text("created_at").notNull().default(""),
 });

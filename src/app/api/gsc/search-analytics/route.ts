@@ -1,7 +1,7 @@
 import { db } from "@/db";
-import { tenants, websites, keywords, competitors, rankingHistory } from "@/db/schema";
+import { tenants, websites, keywords, rankingHistory } from "@/db/schema";
 import { refreshAccessToken, getSearchAnalytics } from "@/lib/google-search-console";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export async function POST(request: Request) {
   try {
@@ -71,31 +71,67 @@ export async function POST(request: Request) {
       return Response.json({
         data: {
           keywordsImported: 0,
+          keywordsUpdated: 0,
           message: "No search analytics data found for this site. Make sure the site is verified in Google Search Console.",
         },
       });
     }
 
-    // Delete old keywords for this website and replace with GSC data
-    db.delete(keywords).where(eq(keywords.websiteId, websiteId)).run();
+    // Get existing keywords for upsert
+    const existingKws = db.select().from(keywords).where(eq(keywords.websiteId, websiteId)).all();
+    const existingMap = new Map(existingKws.map((k) => [k.keyword, k]));
 
-    // Insert keywords from GSC data
+    let newCount = 0;
+    let updatedCount = 0;
+
+    // Upsert keywords from GSC data
     for (const row of rows) {
-      db.insert(keywords)
-        .values({
-          id: crypto.randomUUID(),
-          websiteId,
-          keyword: row.query,
-          position: Math.round(row.position * 10) / 10,
-          change: 0, // No historical comparison on first import
-          volume: row.impressions,
-          difficulty: row.position <= 6 ? "easy" : row.position <= 20 ? "medium" : "hard",
-          history: JSON.stringify([Math.round(row.position * 10) / 10]),
-          isTop3: row.position <= 3 ? 1 : 0,
-          isFalling: 0,
-        })
-        .run();
+      const existing = existingMap.get(row.query);
+      const position = Math.round(row.position * 10) / 10;
+
+      if (existing) {
+        // Update existing keyword
+        const history = (() => {
+          try { return JSON.parse(existing.history); } catch { return []; }
+        })();
+        history.push(position);
+        if (history.length > 30) history.shift(); // Keep last 30 data points
+
+        db.update(keywords)
+          .set({
+            position,
+            volume: row.impressions,
+            difficulty: position <= 6 ? "easy" : position <= 20 ? "medium" : "hard",
+            isTop3: position <= 3 ? 1 : 0,
+            isFalling: history.length >= 2 && history[history.length - 1] > history[history.length - 2] ? 1 : 0,
+            history: JSON.stringify(history),
+          })
+          .where(eq(keywords.id, existing.id))
+          .run();
+        updatedCount++;
+        existingMap.delete(row.query);
+      } else {
+        // Insert new keyword
+        db.insert(keywords)
+          .values({
+            id: crypto.randomUUID(),
+            websiteId,
+            keyword: row.query,
+            position,
+            change: 0,
+            volume: row.impressions,
+            difficulty: position <= 6 ? "easy" : position <= 20 ? "medium" : "hard",
+            history: JSON.stringify([position]),
+            isTop3: position <= 3 ? 1 : 0,
+            isFalling: 0,
+          })
+          .run();
+        newCount++;
+      }
     }
+
+    // Keywords no longer in GSC → don't delete, just let them age naturally
+    // (users can manage them via Rankings page)
 
     // Update website KPIs
     const updatedKws = db.select().from(keywords).where(eq(keywords.websiteId, websiteId)).all();
@@ -108,7 +144,8 @@ export async function POST(request: Request) {
         .set({
           keywordsCount: updatedKws.length,
           avgPosition: Math.round(avgPos * 10) / 10,
-          estimatedTraffic: Math.round(totalVolume * 0.032), // Rough CTR estimate
+          estimatedTraffic: Math.round(totalVolume * 0.032),
+          lastGscSync: new Date().toISOString(),
         })
         .where(eq(websites.id, websiteId))
         .run();
@@ -128,33 +165,14 @@ export async function POST(request: Request) {
       })
       .run();
 
-    // Build competitor list from top domains in results
-    const topKws = [...rows]
-      .sort((a, b) => a.position - b.position)
-      .slice(0, 5);
-
-    db.delete(competitors).where(eq(competitors.websiteId, websiteId)).run();
-    for (let i = 0; i < topKws.length; i++) {
-      db.insert(competitors)
-        .values({
-          id: crypto.randomUUID(),
-          websiteId,
-          rank: i + 1,
-          domain: `competidor-${i + 1}.com`,
-          avgPosition: topKws[i].position,
-          trend: "flat",
-          highlightChange: 0,
-          keywordsOverlap: "[]",
-          trafficEstimate: 0,
-          isManual: 0,
-          lastUpdated: new Date().toISOString(),
-        })
-        .run();
-    }
+    // Note: Competitors are now managed manually via /competitors page.
+    // GSC sync no longer creates fake competitors.
 
     return Response.json({
       data: {
-        keywordsImported: rows.length,
+        keywordsImported: newCount,
+        keywordsUpdated: updatedCount,
+        totalKeywords: updatedKws.length,
         avgPosition: avgPos,
         totalImpressions: rows.reduce((sum, r) => sum + r.impressions, 0),
         totalClicks: rows.reduce((sum, r) => sum + r.clicks, 0),

@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [gscSyncing, setGscSyncing] = useState(false);
   const [gscError, setGscError] = useState<string | null>(null);
   const [gscResult, setGscResult] = useState<string | null>(null);
+  const [gscSyncLabel, setGscSyncLabel] = useState<string>("");
   const [auditing, setAuditing] = useState(false);
   const [auditResult, setAuditResult] = useState<string | null>(null);
   const [auditError, setAuditError] = useState<string | null>(null);
@@ -45,7 +46,17 @@ export default function DashboardPage() {
     } catch {
       // GSC not configured
     }
-  }, [tenant]);
+    // Also fetch sync status for this website
+    try {
+      const syncRes = await fetch(`/api/gsc/sync-status?websiteId=${websiteId}`);
+      const syncJson = await syncRes.json();
+      if (syncRes.ok && syncJson.data) {
+        setGscSyncLabel(syncJson.data.lastSyncLabel);
+      }
+    } catch {
+      // Ignore
+    }
+  }, [tenant, websiteId]);
 
   useEffect(() => {
     checkGSCStatus();
@@ -75,7 +86,7 @@ export default function DashboardPage() {
       const popup = window.open(json.data.authUrl, "gsc-auth", "width=600,height=700");
       if (!popup) {
         // Fallback: open in same window
-        window.location.href = authUrl.toString();
+        window.location.href = json.data.authUrl;
         return;
       }
       // Poll for popup close
@@ -103,7 +114,9 @@ export default function DashboardPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "GSC sync failed");
-      setGscResult(`${json.data.keywordsImported} keywords importadas de GSC`);
+      const d = json.data;
+      setGscResult(`${d.keywordsImported} nuevas, ${d.keywordsUpdated} actualizadas · ${d.totalImpressions.toLocaleString()} impresiones`);
+      setGscSyncLabel("Ahora");
       refetch();
     } catch (err) {
       setGscError(err instanceof Error ? err.message : "Error");
@@ -206,16 +219,21 @@ export default function DashboardPage() {
 
           {/* GSC Connect / Sync Button */}
           {gscStatus?.connected ? (
-            <button
-              onClick={handleGSCSync}
-              disabled={gscSyncing}
-              className="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-blue-100 disabled:opacity-50"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={gscSyncing ? "animate-spin" : ""}>
-                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-              </svg>
-              {gscSyncing ? "Sincronizando GSC..." : "Sincronizar GSC"}
-            </button>
+            <div className="flex items-center gap-1.5">
+              {gscSyncLabel && !gscSyncing && (
+                <span className="text-[11px] text-gray-400">{gscSyncLabel}</span>
+              )}
+              <button
+                onClick={handleGSCSync}
+                disabled={gscSyncing}
+                className="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-blue-100 disabled:opacity-50"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={gscSyncing ? "animate-spin" : ""}>
+                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+                {gscSyncing ? "Sincronizando GSC..." : "Sincronizar GSC"}
+              </button>
+            </div>
           ) : (
             <button
               onClick={handleConnectGSC}

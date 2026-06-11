@@ -150,6 +150,12 @@ try {
     sqlite.exec("ALTER TABLE competitors ADD COLUMN last_updated TEXT NOT NULL DEFAULT ''");
   }
 
+  // Websites — last_gsc_sync
+  const webCols = sqlite.pragma("table_info(websites)").map((c: any) => c.name);
+  if (!webCols.includes("last_gsc_sync")) {
+    sqlite.exec("ALTER TABLE websites ADD COLUMN last_gsc_sync TEXT");
+  }
+
   // GEO tables
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS geo_queries (
