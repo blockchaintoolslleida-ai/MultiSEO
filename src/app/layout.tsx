@@ -1,35 +1,33 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { TenantProvider } from "@/hooks/use-tenant";
+import { AppHeader } from "@/components/layout/app-header";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MultiSEO - SEO Analytics Platform",
-  description: "Multi-site SEO analytics and management dashboard",
+  title: "MultiSEO — Dashboard",
+  description: "Sistema SEO multiempresa con inteligencia artificial",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
+    <html lang="es">
+      <body className={`${inter.className} antialiased`}>
+        <TenantProvider>
+          <TooltipProvider>
+          <AppHeader />
+          <div className="flex" style={{ minHeight: "calc(100vh - 60px)" }}>
+            <AppSidebar />
+            <main className="flex-1 bg-content-bg p-6 overflow-y-auto">
+              {children}
+            </main>
+          </div>
+        </TooltipProvider>
+        </TenantProvider>
       </body>
     </html>
   );
