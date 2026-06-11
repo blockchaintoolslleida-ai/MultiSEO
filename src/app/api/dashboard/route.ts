@@ -21,13 +21,47 @@ export async function GET(request: Request) {
     const compRows = db.select().from(competitors).where(eq(competitors.websiteId, websiteId)).all();
     const rankingRows = db.select().from(rankingHistory).where(eq(rankingHistory.websiteId, websiteId)).all();
 
+    // Calculate real KPI changes from ranking history
+    const sortedHistory = [...rankingRows].sort((a, b) => {
+      // Parse dates like "10 May", "1 Jun" for comparison
+      const months: Record<string, number> = { ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5, jul: 6, ago: 7, sep: 8, oct: 9, nov: 10, dic: 11 };
+      const parseDate = (d: string) => {
+        const [day, month] = d.split(" ");
+        return months[month.toLowerCase()] * 100 + parseInt(day);
+      };
+      return parseDate(a.date) - parseDate(b.date);
+    });
+
+    let positionChange = 0;
+    let positionTrend: "up" | "down" | "flat" = "flat";
+    if (sortedHistory.length >= 2) {
+      const prev = sortedHistory[sortedHistory.length - 2].avgPosition;
+      const latest = sortedHistory[sortedHistory.length - 1].avgPosition;
+      positionChange = Math.round((prev - latest) * 10) / 10; // positive = improvement (lower position)
+      positionTrend = positionChange > 0.1 ? "up" : positionChange < -0.1 ? "down" : "flat";
+    }
+
+    // Traffic change based on keyword position improvements
+    const trafficChange = kwRows.reduce((sum, kw) => {
+      const hist = JSON.parse(kw.history) as number[];
+      if (hist.length >= 2) {
+        const improvement = hist[hist.length - 2] - hist[hist.length - 1];
+        return sum + improvement * (kw.volume / 100);
+      }
+      return sum;
+    }, 0);
+    const trafficTrend: "up" | "down" | "flat" = trafficChange > 5 ? "up" : trafficChange < -5 ? "down" : "flat";
+
+    // Health trend based on last audit
+    const healthTrend: "up" | "down" | "flat" = website.healthScore >= 80 ? "up" : website.healthScore >= 50 ? "flat" : "down";
+
     const data: SEODashboardData = {
       websiteUrl: website.domain,
       kpis: {
-        avgPosition: { value: website.avgPosition, change: 2.1, trend: "up" },
-        estimatedTraffic: { value: website.estimatedTraffic, change: 12.3, trend: "up" },
-        backlinks: { value: website.backlinksCount, change: 48, trend: "up" },
-        healthScore: { value: website.healthScore, change: 5, trend: "up" },
+        avgPosition: { value: website.avgPosition, change: positionChange, trend: positionTrend },
+        estimatedTraffic: { value: website.estimatedTraffic, change: Math.round(Math.abs(trafficChange)), trend: trafficTrend },
+        backlinks: { value: website.backlinksCount, change: 0, trend: "flat" },
+        healthScore: { value: website.healthScore, change: 0, trend: healthTrend },
       },
       rankingHistory: rankingRows.map((r) => ({
         date: r.date,

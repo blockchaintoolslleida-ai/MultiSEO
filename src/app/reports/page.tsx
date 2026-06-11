@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
 import type { ReportData } from "@/types/seo";
@@ -15,8 +15,15 @@ interface ReportStats {
   draft: number;
 }
 
+interface WebsiteOption {
+  id: string;
+  domain: string;
+}
+
 export default function ReportsPage() {
   const { tenant } = useTenant();
+  const [websiteId, setWebsiteId] = useState("1");
+  const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
   const { data: reports, loading: rLoading } = useApi<ReportData[]>(
     tenant ? `/api/reports?tenantId=${tenant.id}` : ""
   );
@@ -27,13 +34,27 @@ export default function ReportsPage() {
 
   const loading = rLoading || sLoading || !tenant;
 
+  // Fetch websites list for the selector
+  useEffect(() => {
+    if (!tenant) return;
+    fetch(`/api/websites?tenantId=${tenant.id}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.data) {
+          setWebsitesList(json.data.map((w: any) => ({ id: w.id, domain: w.domain })));
+          if (json.data.length > 0) setWebsiteId(json.data[0].id);
+        }
+      })
+      .catch(() => {});
+  }, [tenant]);
+
   const handleExportPDF = async () => {
     setExporting(true);
     try {
       const res = await fetch("/api/reports/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ websiteId: "1", title: `Reporte SEO — ${tenant?.name ?? ""}` }),
+        body: JSON.stringify({ websiteId, title: `Reporte SEO — ${tenant?.name ?? ""}` }),
       });
       if (!res.ok) throw new Error("Export failed");
       const blob = await res.blob();
@@ -75,10 +96,23 @@ export default function ReportsPage() {
         <span className="text-gray-700 font-medium">Reportes</span>
       </div>
       <div className="flex items-start justify-between mb-5">
-        <h1 className="text-[22px] font-bold text-gray-900 flex items-center gap-2.5">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          Reportes para Clientes
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-[22px] font-bold text-gray-900 flex items-center gap-2.5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Reportes para Clientes
+          </h1>
+          {websitesList.length > 1 && (
+            <select
+              value={websiteId}
+              onChange={(e) => setWebsiteId(e.target.value)}
+              className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 font-medium focus:outline-none focus:border-brand-400"
+            >
+              {websitesList.map((w) => (
+                <option key={w.id} value={w.id}>{w.domain}</option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportPDF}

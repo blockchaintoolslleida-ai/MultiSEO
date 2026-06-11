@@ -99,7 +99,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/gsc/search-analytics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId: tenant.id, websiteId: "1" }),
+        body: JSON.stringify({ tenantId: tenant.id, websiteId }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "GSC sync failed");
