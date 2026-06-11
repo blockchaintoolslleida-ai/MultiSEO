@@ -112,7 +112,6 @@ export async function getSearchAnalytics(
       endDate,
       dimensions: ["query"],
       rowLimit,
-      aggregationType: "byPage",
     }),
   });
 
