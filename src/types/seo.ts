@@ -25,6 +25,46 @@ export interface CompetitorData {
   highlightChange?: boolean;
 }
 
+export interface CompetitorFull extends CompetitorData {
+  id: string;
+  keywordsOverlap: string[];
+  trafficEstimate: number;
+  isManual: boolean;
+  lastUpdated: string;
+}
+
+export interface CompetitorKPIs {
+  totalCompetitors: number;
+  yourAvgPosition: number;
+  top3AvgPosition: number;
+  overlappingKeywords: number;
+  activeThreats: number;
+}
+
+export interface OverlapMatrixRow {
+  keywordId: string;
+  keyword: string;
+  yourPosition: number;
+  competitors: { domain: string; position: number }[];
+}
+
+export interface CompetitorRecommendation {
+  type: "gap" | "threat" | "opportunity" | "new_competitor";
+  priority: "high" | "medium" | "low";
+  title: string;
+  description: string;
+  actionLabel: string;
+  relatedCompetitor?: string;
+  relatedKeyword?: string;
+}
+
+export interface CompetitorsFullData {
+  kpis: CompetitorKPIs;
+  competitors: CompetitorFull[];
+  overlapMatrix: OverlapMatrixRow[];
+  recommendations: CompetitorRecommendation[];
+}
+
 export interface KeywordData {
   id: string;
   keyword: string;
