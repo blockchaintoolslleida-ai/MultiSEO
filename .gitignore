@@ -43,3 +43,6 @@ next-env.d.ts
 # SQLite
 *.db-shm
 *.db-wal
+
+# Temp files
+cookies.txt
