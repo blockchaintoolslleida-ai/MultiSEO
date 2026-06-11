@@ -56,8 +56,62 @@ Responde ÚNICAMENTE con este JSON:
 }`;
 }
 
+function sanitizeJsonString(raw: string): string {
+  // Remove markdown code fences if present
+  let cleaned = raw.trim();
+  if (cleaned.startsWith("```json")) cleaned = cleaned.slice(7);
+  if (cleaned.startsWith("```")) cleaned = cleaned.slice(3);
+  if (cleaned.endsWith("```")) cleaned = cleaned.slice(0, -3);
+  cleaned = cleaned.trim();
+
+  // Fix unescaped newlines inside string values
+  // Strategy: find the outermost JSON structure and escape internal strings
+  // Simpler approach: try to fix common issues
+  try {
+    JSON.parse(cleaned);
+    return cleaned;
+  } catch {
+    // Attempt to fix: replace literal newlines that are inside strings with \n
+    // This regex approach is fragile but handles the common case
+    let fixed = "";
+    let inString = false;
+    let escape = false;
+    for (let i = 0; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (escape) {
+        fixed += ch;
+        escape = false;
+        continue;
+      }
+      if (ch === "\\") {
+        fixed += ch;
+        escape = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        fixed += ch;
+        continue;
+      }
+      // Replace unescaped newlines inside strings
+      if (inString && (ch === "\n" || ch === "\r")) {
+        fixed += ch === "\n" ? "\\n" : "\\r";
+        // If next char is part of \r\n, skip it too
+        continue;
+      }
+      // Replace unescaped tabs inside strings
+      if (inString && ch === "\t") {
+        fixed += "\\t";
+        continue;
+      }
+      fixed += ch;
+    }
+    return fixed;
+  }
+}
+
 export async function generateArticle(params: GenerateParams): Promise<GeneratedArticle> {
-  const maxTokens = params.length === "corto" ? 1000 : params.length === "largo" ? 3000 : 2000;
+  const maxTokens = params.length === "corto" ? 2000 : params.length === "largo" ? 6000 : 4000;
 
   const response = await fetch(DEEPSEEK_URL, {
     method: "POST",
@@ -83,5 +137,18 @@ export async function generateArticle(params: GenerateParams): Promise<Generated
   }
 
   const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
+  const rawContent = data.choices[0].message.content;
+
+  // Sanitize and parse
+  const sanitized = sanitizeJsonString(rawContent);
+  try {
+    return JSON.parse(sanitized);
+  } catch (parseError) {
+    // If sanitization didn't help, log the raw content for debugging and rethrow
+    console.error("DeepSeek JSON parse error. Raw content (first 500 chars):", rawContent.slice(0, 500));
+    console.error("Sanitized (first 500 chars):", sanitized.slice(0, 500));
+    throw new Error(
+      `DeepSeek returned malformed JSON: ${parseError instanceof Error ? parseError.message : "Unknown parse error"}. Try regenerating.`
+    );
+  }
 }
