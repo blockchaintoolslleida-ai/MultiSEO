@@ -1,0 +1,210 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - img [ref=e5]
+      - text: MultiSEO
+    - generic [ref=e9]:
+      - button "3" [ref=e10]:
+        - img [ref=e11]
+        - generic [ref=e14]: "3"
+      - generic [ref=e15]:
+        - generic [ref=e16]: JD
+        - generic [ref=e17]: Juan Díaz
+        - img [ref=e18]
+  - generic [ref=e20]:
+    - complementary [ref=e21]:
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Principal
+        - link "Dashboard" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e25]
+          - generic [ref=e30]: Dashboard
+        - link "Websites" [ref=e31] [cursor=pointer]:
+          - /url: /websites
+          - img [ref=e32]
+          - generic [ref=e35]: Websites
+        - link "Artículos" [ref=e36] [cursor=pointer]:
+          - /url: /articles
+          - img [ref=e37]
+          - generic [ref=e40]: Artículos
+        - link "Rankings" [ref=e41] [cursor=pointer]:
+          - /url: /rankings
+          - img [ref=e42]
+          - generic [ref=e45]: Rankings
+      - generic [ref=e46]:
+        - separator [ref=e47]
+        - paragraph [ref=e48]: Analytics
+        - link "Reportes" [ref=e49] [cursor=pointer]:
+          - /url: /reports
+          - img [ref=e50]
+          - generic [ref=e52]: Reportes
+        - link "Competidores" [ref=e53] [cursor=pointer]:
+          - /url: /competitors
+          - img [ref=e54]
+          - generic [ref=e56]: Competidores
+      - generic [ref=e57]:
+        - separator [ref=e58]
+        - paragraph [ref=e59]: Sistema
+        - link "Configuración" [ref=e60] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e61]
+          - generic [ref=e64]: Configuración
+      - generic [ref=e65] [cursor=pointer]:
+        - img [ref=e66]
+        - generic [ref=e71]: Demo Company
+        - img [ref=e72]
+    - main [ref=e74]:
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - img [ref=e78]
+            - text: Demo Company
+          - img [ref=e81]
+          - generic [ref=e83]: Reportes
+        - generic [ref=e84]:
+          - heading "Reportes para Clientes" [level=1] [ref=e85]:
+            - img [ref=e86]
+            - text: Reportes para Clientes
+          - button "Generar Nuevo Reporte" [ref=e89]:
+            - img [ref=e90]
+            - text: Generar Nuevo Reporte
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - generic [ref=e94]:
+              - generic [ref=e95]:
+                - paragraph [ref=e96]: Demo Company
+                - paragraph [ref=e97]: Informe Mensual — Junio 2026
+                - paragraph [ref=e98]: Junio 2026 · sitioweb.com
+              - generic [ref=e99]:
+                - generic [ref=e100]:
+                  - generic [ref=e101]: Posición Media
+                  - generic [ref=e102]: 8.4 ↑
+                - generic [ref=e103]:
+                  - generic [ref=e104]: Tráfico Estimado
+                  - generic [ref=e105]: 24.8K
+                - generic [ref=e106]:
+                  - generic [ref=e107]: Backlinks
+                  - generic [ref=e108]: 1,204
+                - paragraph [ref=e122]: ✅ 3 keywords subieron · ⚠️ 1 keyword bajó
+              - generic [ref=e123]: Generado por MultiSEO · 10/06/2026
+            - generic [ref=e124]:
+              - heading "Informe Mensual — Junio 2026" [level=3] [ref=e125]
+              - generic [ref=e126]:
+                - generic [ref=e127]:
+                  - img [ref=e128]
+                  - text: Programado
+                - generic [ref=e130]: Mensual
+              - paragraph [ref=e134]:
+                - text: "Envío automático:"
+                - strong [ref=e135]: día 1 de cada mes
+              - generic [ref=e136]:
+                - button "Descargar PDF" [ref=e137]:
+                  - img [ref=e138]
+                  - text: Descargar PDF
+                - button "Compartir" [ref=e141]:
+                  - img [ref=e142]
+                  - text: Compartir
+          - generic [ref=e148]:
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - paragraph [ref=e152]: Demo Company
+                - paragraph [ref=e153]: Informe Semanal — Semana 23
+                - paragraph [ref=e154]: 2-8 Jun 2026 · mitiendaonline.es
+              - generic [ref=e155]:
+                - generic [ref=e156]:
+                  - generic [ref=e157]: Keywords Top 10
+                  - generic [ref=e158]: 8/16
+                - generic [ref=e159]:
+                  - generic [ref=e160]: Artículos Publicados
+                  - generic [ref=e161]: "2"
+                - generic [ref=e162]:
+                  - generic [ref=e163]: Mejora Semanal
+                  - generic [ref=e164]: +2.3%
+              - generic [ref=e178]: Generado por MultiSEO · 10/06/2026
+            - generic [ref=e179]:
+              - heading "Informe Semanal — Semana 23" [level=3] [ref=e180]
+              - generic [ref=e181]:
+                - generic [ref=e182]:
+                  - img [ref=e183]
+                  - text: Enviado
+                - generic [ref=e186]: Semanal
+              - paragraph [ref=e190]:
+                - text: "Envío automático:"
+                - strong [ref=e191]: cada lunes 08:00
+              - generic [ref=e192]:
+                - button "Descargar PDF" [ref=e193]:
+                  - img [ref=e194]
+                  - text: Descargar PDF
+                - button "Compartir" [ref=e197]:
+                  - img [ref=e198]
+                  - text: Compartir
+          - generic [ref=e204]:
+            - generic [ref=e207]:
+              - img [ref=e209]
+              - paragraph [ref=e211]: Reporte rápido
+              - paragraph [ref=e212]: Personaliza fechas y métricas
+            - generic [ref=e213]:
+              - heading "Nuevo Reporte Personalizado" [level=3] [ref=e214]
+              - generic [ref=e215]:
+                - generic [ref=e216]: Borrador
+                - generic [ref=e217]: Personalizado
+              - generic [ref=e218]:
+                - generic [ref=e219]: Seleccionar rango de fechas
+                - generic [ref=e221]: Elegir métricas a incluir
+                - generic [ref=e223]: Personalizar branding
+                - generic [ref=e225]: Vista previa y enviar
+              - button "Configurar" [ref=e228]
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - heading "Enlaces Compartidos Activos" [level=3] [ref=e231]:
+              - img [ref=e232]
+              - text: Enlaces Compartidos Activos
+            - generic [ref=e238]:
+              - generic [ref=e239]:
+                - generic [ref=e240]:
+                  - paragraph [ref=e241]: Informe Mensual — Junio 2026
+                  - paragraph [ref=e242]: /report/demo/1 · Expira en 13 días
+                - generic [ref=e243]:
+                  - button "Copiar" [ref=e244]:
+                    - img [ref=e245]
+                    - text: Copiar
+                  - button [ref=e248]:
+                    - img [ref=e249]
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - paragraph [ref=e254]: Informe Semanal — Semana 23
+                  - paragraph [ref=e255]: /report/demo/2 · Expira en 4 días
+                - generic [ref=e256]:
+                  - button "Copiar" [ref=e257]:
+                    - img [ref=e258]
+                    - text: Copiar
+                  - button [ref=e261]:
+                    - img [ref=e262]
+            - generic [ref=e265]:
+              - textbox [ref=e266]: https://multiseo.app/report/demo/june-2026?token=eyJhbG...
+              - button "Copiar enlace" [ref=e267]
+          - generic [ref=e268]:
+            - heading "Personalización de Marca" [level=3] [ref=e269]:
+              - img [ref=e270]
+              - text: Personalización de Marca
+            - generic [ref=e272]:
+              - generic [ref=e273]:
+                - paragraph [ref=e274]: Logo del cliente
+                - generic [ref=e275] [cursor=pointer]:
+                  - img [ref=e276]
+                  - paragraph [ref=e280]: Subir logo
+              - generic [ref=e281]:
+                - paragraph [ref=e282]: Color de marca
+                - generic [ref=e283]:
+                  - button [ref=e284]
+                  - button [ref=e285]
+                  - button [ref=e286]
+                  - button [ref=e287]
+                  - button [ref=e288]
+                  - button [ref=e289]:
+                    - img [ref=e290]
+            - generic [ref=e291]:
+              - paragraph [ref=e292]: Texto del footer
+              - textbox [ref=e293]: © 2026 Demo Company — Reporte generado por MultiSEO
+  - button "Open Next.js Dev Tools" [ref=e299] [cursor=pointer]:
+    - img [ref=e300]

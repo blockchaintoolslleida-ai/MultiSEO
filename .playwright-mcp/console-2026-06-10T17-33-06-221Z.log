@@ -1,0 +1,84 @@
+[     118ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     722ms] [LOG] [Fast Refresh] done in 710ms @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     881ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     904ms] [LOG] [HMR] connected @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   32425ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   32426ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   52275ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   52275ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   57573ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   57811ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/competitors?_rsc=SfuZTMmfeLvKDX86:0
+[   57826ms] [LOG] [Fast Refresh] done in 354ms @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   57907ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/competitors:0
+[   57998ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   58020ms] [LOG] [HMR] connected @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   60113ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/settings?_rsc=SfuZTMmfeLvKDX86:0
+[   60180ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/settings:0
+[   60220ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   60236ms] [LOG] [HMR] connected @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   61620ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   61621ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   78611ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/rankings?_rsc=Ze1WJPHt7H8ow9sP:0
+[   78686ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/rankings:0
+[   78763ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   78781ms] [LOG] [HMR] connected @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   80175ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   80175ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  321255ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  321256ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  523335ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  523335ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  534258ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  534259ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  593802ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  593802ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[48468568ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[48468569ms] [LOG] [Fast Refresh] done in 103ms @ http://localhost:4000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477

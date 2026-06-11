@@ -1,0 +1,247 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - img [ref=e5]
+      - text: MultiSEO
+    - generic [ref=e9]:
+      - button "3" [ref=e10]:
+        - img [ref=e11]
+        - generic [ref=e14]: "3"
+      - generic [ref=e15]:
+        - generic [ref=e16]: JD
+        - generic [ref=e17]: Juan Díaz
+        - img [ref=e18]
+  - generic [ref=e20]:
+    - complementary [ref=e21]:
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Principal
+        - link "Dashboard" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e25]
+          - generic [ref=e30]: Dashboard
+        - link "Websites" [ref=e31] [cursor=pointer]:
+          - /url: /websites
+          - img [ref=e32]
+          - generic [ref=e35]: Websites
+        - link "Artículos" [ref=e36] [cursor=pointer]:
+          - /url: /articles
+          - img [ref=e37]
+          - generic [ref=e40]: Artículos
+        - link "Rankings" [ref=e41] [cursor=pointer]:
+          - /url: /rankings
+          - img [ref=e42]
+          - generic [ref=e45]: Rankings
+      - generic [ref=e46]:
+        - separator [ref=e47]
+        - paragraph [ref=e48]: Analytics
+        - link "Reportes" [ref=e49] [cursor=pointer]:
+          - /url: /reports
+          - img [ref=e50]
+          - generic [ref=e52]: Reportes
+        - link "Competidores" [ref=e53] [cursor=pointer]:
+          - /url: /competitors
+          - img [ref=e54]
+          - generic [ref=e56]: Competidores
+      - generic [ref=e57]:
+        - separator [ref=e58]
+        - paragraph [ref=e59]: Sistema
+        - link "Configuración" [ref=e60] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e61]
+          - generic [ref=e64]: Configuración
+      - generic [ref=e65] [cursor=pointer]:
+        - img [ref=e66]
+        - generic [ref=e71]: Demo Company
+        - img [ref=e72]
+    - main [ref=e74]:
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - img [ref=e78]
+            - text: Demo Company
+          - img [ref=e81]
+          - generic [ref=e83]: Websites
+        - generic [ref=e84]:
+          - heading "Gestión de Websites" [level=1] [ref=e85]:
+            - img [ref=e86]
+            - text: Gestión de Websites
+          - button "Añadir Website" [ref=e89]:
+            - img [ref=e90]
+            - text: Añadir Website
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - img [ref=e94]
+            - generic [ref=e97]:
+              - paragraph [ref=e98]: "6"
+              - paragraph [ref=e99]: Websites activos
+          - generic [ref=e100]:
+            - img [ref=e102]
+            - generic [ref=e105]:
+              - paragraph [ref=e106]: "4"
+              - paragraph [ref=e107]: Conectados
+          - generic [ref=e108]:
+            - img [ref=e110]
+            - generic [ref=e112]:
+              - paragraph [ref=e113]: "1"
+              - paragraph [ref=e114]: Sin acceso
+          - generic [ref=e115]:
+            - img [ref=e117]
+            - generic [ref=e121]:
+              - paragraph [ref=e122]: "1"
+              - paragraph [ref=e123]: Error
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - generic [ref=e127]: sitioweb.com
+              - button [ref=e129]:
+                - img [ref=e130]
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - img [ref=e136]
+                - text: WordPress
+              - generic [ref=e139]:
+                - img [ref=e140]
+                - text: FTP
+              - generic [ref=e143]:
+                - img [ref=e144]
+                - text: cPanel
+            - generic [ref=e146]:
+              - generic [ref=e147]:
+                - paragraph [ref=e148]: Keywords
+                - paragraph [ref=e149]: "24"
+              - generic [ref=e150]:
+                - paragraph [ref=e151]: Artículos
+                - paragraph [ref=e152]: "18"
+              - generic [ref=e153]:
+                - paragraph [ref=e154]: Posición Media
+                - paragraph [ref=e155]: "8.4"
+              - generic [ref=e156]:
+                - paragraph [ref=e157]: Último Audit
+                - paragraph [ref=e158]: Hace 2h
+            - generic [ref=e159]:
+              - button "Dashboard" [ref=e160]:
+                - img [ref=e161]
+                - text: Dashboard
+              - button "Editar" [ref=e165]
+              - button "Test" [ref=e166]
+              - button "Eliminar" [ref=e167]
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - generic [ref=e170]: mitiendaonline.es
+              - button [ref=e172]:
+                - img [ref=e173]
+            - generic [ref=e177]:
+              - generic [ref=e178]:
+                - img [ref=e179]
+                - text: WordPress
+              - generic [ref=e182]:
+                - img [ref=e183]
+                - text: SSH
+            - generic [ref=e185]:
+              - generic [ref=e186]:
+                - paragraph [ref=e187]: Keywords
+                - paragraph [ref=e188]: "16"
+              - generic [ref=e189]:
+                - paragraph [ref=e190]: Artículos
+                - paragraph [ref=e191]: "9"
+              - generic [ref=e192]:
+                - paragraph [ref=e193]: Posición Media
+                - paragraph [ref=e194]: "12.1"
+              - generic [ref=e195]:
+                - paragraph [ref=e196]: Último Audit
+                - paragraph [ref=e197]: Hace 5h
+            - generic [ref=e198]:
+              - button "Dashboard" [ref=e199]:
+                - img [ref=e200]
+                - text: Dashboard
+              - button "Editar" [ref=e204]
+              - button "Test" [ref=e205]
+              - button "Eliminar" [ref=e206]
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - generic [ref=e209]: blog-antiguo.com
+              - button [ref=e211]:
+                - img [ref=e212]
+            - generic [ref=e217]:
+              - img [ref=e218]
+              - text: WordPress
+            - generic [ref=e221]:
+              - img [ref=e222]
+              - text: Credenciales expiradas — actualizar acceso
+            - generic [ref=e224]:
+              - generic [ref=e225]:
+                - paragraph [ref=e226]: Keywords
+                - paragraph [ref=e227]: "8"
+              - generic [ref=e228]:
+                - paragraph [ref=e229]: Último OK
+                - paragraph [ref=e230]: Hace 12d
+            - generic [ref=e231]:
+              - button "Actualizar acceso" [ref=e232]
+              - button "Eliminar" [ref=e233]
+          - generic [ref=e234]:
+            - generic [ref=e235]:
+              - generic [ref=e236]: old-project.net
+              - button [ref=e238]:
+                - img [ref=e239]
+            - generic [ref=e243]:
+              - generic [ref=e244]:
+                - img [ref=e245]
+                - text: FTP
+              - generic [ref=e248]:
+                - img [ref=e249]
+                - text: cPanel
+            - generic [ref=e251]:
+              - img [ref=e252]
+              - text: Error conexión FTP — timeout tras 30s
+            - generic [ref=e256]:
+              - generic [ref=e257]:
+                - paragraph [ref=e258]: Keywords
+                - paragraph [ref=e259]: "5"
+              - generic [ref=e260]:
+                - paragraph [ref=e261]: Reintentos
+                - paragraph [ref=e262]: 3/5
+            - generic [ref=e263]:
+              - button "Reintentar" [ref=e264]
+              - button "Editar" [ref=e265]
+              - button "Eliminar" [ref=e266]
+          - generic [ref=e267]:
+            - generic [ref=e268]:
+              - generic [ref=e269]: agencia-marketing.io
+              - button [ref=e271]:
+                - img [ref=e272]
+            - generic [ref=e276]:
+              - generic [ref=e277]:
+                - img [ref=e278]
+                - text: WordPress
+              - generic [ref=e281]:
+                - img [ref=e282]
+                - text: FTP
+              - generic [ref=e285]:
+                - img [ref=e286]
+                - text: SSH
+            - generic [ref=e288]:
+              - generic [ref=e289]:
+                - paragraph [ref=e290]: Keywords
+                - paragraph [ref=e291]: "32"
+              - generic [ref=e292]:
+                - paragraph [ref=e293]: Artículos
+                - paragraph [ref=e294]: "27"
+              - generic [ref=e295]:
+                - paragraph [ref=e296]: Posición Media
+                - paragraph [ref=e297]: "5.6"
+              - generic [ref=e298]:
+                - paragraph [ref=e299]: Último Audit
+                - paragraph [ref=e300]: Hace 30m
+            - generic [ref=e301]:
+              - button "Dashboard" [ref=e302]:
+                - img [ref=e303]
+                - text: Dashboard
+              - button "Editar" [ref=e307]
+              - button "Test" [ref=e308]
+              - button "Eliminar" [ref=e309]
+          - generic [ref=e311]:
+            - img [ref=e313]
+            - paragraph [ref=e314]: Añadir nuevo website
+            - paragraph [ref=e315]: WordPress, FTP, SSH, cPanel...
+  - button "Open Next.js Dev Tools" [ref=e321] [cursor=pointer]:
+    - img [ref=e322]
