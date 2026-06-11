@@ -1,7 +1,8 @@
 import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { verifyPassword, signSession, sessionCookieHeader } from "@/lib/auth";
+import { verifyPassword } from "@/lib/auth-password";
+import { signSession, sessionCookieHeader } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {

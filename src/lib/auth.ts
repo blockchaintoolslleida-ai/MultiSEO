@@ -2,11 +2,10 @@
  * Auth utilities for MultiSEO.
  *
  * Session signing/verification uses Web Crypto API (works in Edge + Node.js).
- * Password hashing uses Node.js crypto (login API / seed only, never called from Edge).
+ * Password hashing is in auth-password.ts (Node.js only — never imported from Edge).
+ *
+ * IMPORTANT: No Node.js imports, no atob/btoa — must work in Edge Runtime.
  */
-
-// Node crypto — only for PBKDF2 (not used in middleware/Edge)
-import crypto from "crypto";
 
 const SESSION_SECRET = process.env.SESSION_SECRET || "multiseo-dev-secret-change-in-production";
 export const SESSION_COOKIE = "multiseo_session";
@@ -18,58 +17,78 @@ export interface Session {
   tenantName: string;
 }
 
-// ---- Password hashing (Node.js only) ----
+// ---- Base64url encoding (no atob/btoa, Edge-compatible) ----
 
-export function hashPassword(password: string): string {
-  const salt = crypto.randomBytes(32).toString("hex");
-  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
-  return `${salt}:${hash}`;
-}
+const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-export function verifyPassword(password: string, stored: string): boolean {
-  const [salt, hash] = stored.split(":");
-  if (!salt || !hash) return false;
-  const computed = crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
-  return crypto.timingSafeEqual(Buffer.from(computed, "hex"), Buffer.from(hash, "hex"));
-}
-
-// ---- Session management (Web Crypto — Edge + Node.js) ----
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
-async function getKey(): Promise<CryptoKey> {
-  return crypto.subtle.importKey(
-    "raw", encoder.encode(SESSION_SECRET),
-    { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]
-  );
-}
-
-function bytesToBase64url(bytes: ArrayBuffer): string {
-  let binary = "";
-  const arr = new Uint8Array(bytes);
-  for (let i = 0; i < arr.length; i++) {
-    binary += String.fromCharCode(arr[i]);
-  }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-function base64urlToBytes(str: string): Uint8Array {
-  str = str.replace(/-/g, "+").replace(/_/g, "/");
-  while (str.length % 4) str += "=";
-  const binary = atob(str);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
+function stringToBytes(str: string): Uint8Array {
+  const bytes = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i++) {
+    bytes[i] = str.charCodeAt(i);
   }
   return bytes;
 }
 
+function bytesToString(bytes: Uint8Array): string {
+  let str = "";
+  for (let i = 0; i < bytes.length; i++) {
+    str += String.fromCharCode(bytes[i]);
+  }
+  return str;
+}
+
+function toBase64url(bytes: Uint8Array): string {
+  let result = "";
+  const len = bytes.length;
+  for (let i = 0; i < len; i += 3) {
+    const a = bytes[i];
+    const b = i + 1 < len ? bytes[i + 1] : 0;
+    const c = i + 2 < len ? bytes[i + 2] : 0;
+    const n = (a << 16) | (b << 8) | c;
+    result += BASE64_CHARS[(n >> 18) & 63];
+    result += BASE64_CHARS[(n >> 12) & 63];
+    result += i + 1 < len ? BASE64_CHARS[(n >> 6) & 63] : "=";
+    result += i + 2 < len ? BASE64_CHARS[n & 63] : "=";
+  }
+  // Convert to base64url: +→-, /→_, strip padding
+  return result.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64url(str: string): Uint8Array {
+  // Convert base64url to standard base64
+  let b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (b64.length % 4) b64 += "=";
+
+  const bytes: number[] = [];
+  for (let i = 0; i < b64.length; i += 4) {
+    const a = BASE64_CHARS.indexOf(b64[i]);
+    const b = BASE64_CHARS.indexOf(b64[i + 1]);
+    const c = b64[i + 2] === "=" ? 0 : BASE64_CHARS.indexOf(b64[i + 2]);
+    const d = b64[i + 3] === "=" ? 0 : BASE64_CHARS.indexOf(b64[i + 3]);
+    if (a === -1 || b === -1 || c === -1 || d === -1) continue;
+    const n = (a << 18) | (b << 12) | (c << 6) | d;
+    bytes.push((n >> 16) & 255);
+    if (b64[i + 2] !== "=") bytes.push((n >> 8) & 255);
+    if (b64[i + 3] !== "=") bytes.push(n & 255);
+  }
+  return new Uint8Array(bytes);
+}
+
+// ---- Session management (Web Crypto — Edge + Node.js) ----
+
+async function getKey(): Promise<CryptoKey> {
+  const enc = new TextEncoder().encode(SESSION_SECRET);
+  return crypto.subtle.importKey(
+    "raw", enc as unknown as ArrayBuffer,
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]
+  );
+}
+
 export async function signSession(session: Session): Promise<string> {
-  const payload = btoa(JSON.stringify(session)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const payload = toBase64url(stringToBytes(JSON.stringify(session)));
   const key = await getKey();
-  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
-  const signature = bytesToBase64url(sig);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload) as unknown as ArrayBuffer);
+  const signature = toBase64url(new Uint8Array(sig));
   return `${payload}.${signature}`;
 }
 
@@ -80,11 +99,15 @@ export async function verifySession(cookieValue: string): Promise<Session | null
     const [payload, signature] = parts;
 
     const key = await getKey();
-    const sigBytes = base64urlToBytes(signature);
-    const valid = await crypto.subtle.verify("HMAC", key, sigBytes, encoder.encode(payload));
+    const sigBytes = fromBase64url(signature);
+    // TS strict: Uint8Array is a valid BufferSource, but TS may complain about SharedArrayBuffer
+    const valid = await crypto.subtle.verify(
+      "HMAC", key, sigBytes as unknown as ArrayBuffer, new TextEncoder().encode(payload) as unknown as ArrayBuffer
+    );
     if (!valid) return null;
 
-    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    const jsonStr = bytesToString(fromBase64url(payload));
+    return JSON.parse(jsonStr);
   } catch {
     return null;
   }

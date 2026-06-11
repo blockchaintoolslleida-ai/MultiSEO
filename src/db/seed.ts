@@ -1,7 +1,7 @@
 import { db } from "./index";
 import { tenants, websites, keywords, competitors, rankingHistory, articles, reports, notifications, geoQueries, geoResults } from "./schema";
 import { eq } from "drizzle-orm";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth-password";
 
 function seed() {
   db.transaction((tx) => {
