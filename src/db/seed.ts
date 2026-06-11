@@ -63,6 +63,27 @@ function seed() {
         estimatedTraffic: 42000, backlinksCount: 2100, healthScore: 88,
         lastAudit: "Hace 30m", createdAt: new Date().toISOString(),
       },
+      {
+        id: "e74b0ab2-f1a3-4c8d-9e6b-2d5f7a8c9e01", tenantId: "demo", domain: "www.silviaclua.com", status: "connected",
+        accessTypes: JSON.stringify(["wordpress"]),
+        keywordsCount: 5, articlesCount: 0, avgPosition: 6.2,
+        estimatedTraffic: 5000, backlinksCount: 200, healthScore: 85,
+        lastAudit: "Hace 1h", createdAt: new Date().toISOString(),
+      },
+      {
+        id: "1e311052-a2b4-4d9e-7f6c-3e5a8b9d0f12", tenantId: "demo", domain: "www.traumare.com", status: "connected",
+        accessTypes: JSON.stringify(["wordpress"]),
+        keywordsCount: 5, articlesCount: 0, avgPosition: 6.8,
+        estimatedTraffic: 5000, backlinksCount: 200, healthScore: 74,
+        lastAudit: "Hace 1h", createdAt: new Date().toISOString(),
+      },
+      {
+        id: "dd262b94-b3c5-4e0a-8f7d-4f6b9c0e1a23", tenantId: "demo", domain: "participa.blockchaintools.cat", status: "connected",
+        accessTypes: JSON.stringify(["wordpress"]),
+        keywordsCount: 4, articlesCount: 0, avgPosition: 8.8,
+        estimatedTraffic: 5000, backlinksCount: 200, healthScore: 76,
+        lastAudit: "Hace 1h", createdAt: new Date().toISOString(),
+      },
     ]).run();
 
     // === Keywords per website ===
@@ -79,6 +100,26 @@ function seed() {
         { kw: "woocommerce optimizar", pos: 8, chg: -2, vol: 2200, diff: "medium", hist: [6,6,7,7,8,8,8], top3: 0, fall: 0 },
         { kw: "ecommerce posicionamiento", pos: 14, chg: 3, vol: 3600, diff: "hard", hist: [19,18,17,16,15,14,14], top3: 0, fall: 0 },
         { kw: "vender mas online", pos: 11, chg: 0, vol: 1500, diff: "easy", hist: [11,12,11,11,11,11,11], top3: 0, fall: 0 },
+      ],
+      "e74b0ab2-f1a3-4c8d-9e6b-2d5f7a8c9e01": [
+        { kw: "fotografia profesional barcelona", pos: 4, chg: 1, vol: 2400, diff: "medium", hist: [8,7,6,5,4,4,4], top3: 0, fall: 0 },
+        { kw: "silvia clua fotografia", pos: 1, chg: 0, vol: 1200, diff: "easy", hist: [1,1,1,1,1,1,1], top3: 1, fall: 0 },
+        { kw: "fotografo bodas catalunya", pos: 6, chg: -2, vol: 3800, diff: "hard", hist: [4,4,5,5,5,6,6], top3: 0, fall: 1 },
+        { kw: "fotografia artistica", pos: 9, chg: 3, vol: 1500, diff: "medium", hist: [14,12,11,10,9,9,9], top3: 0, fall: 0 },
+        { kw: "reportaje fotografico profesional", pos: 11, chg: 2, vol: 2100, diff: "medium", hist: [15,14,13,12,11,11,11], top3: 0, fall: 0 },
+      ],
+      "1e311052-a2b4-4d9e-7f6c-3e5a8b9d0f12": [
+        { kw: "psicologia trauma online", pos: 5, chg: -1, vol: 1800, diff: "medium", hist: [4,4,4,5,5,5,5], top3: 0, fall: 0 },
+        { kw: "terapia emdr barcelona", pos: 8, chg: 2, vol: 2900, diff: "hard", hist: [12,11,10,9,8,8,8], top3: 0, fall: 0 },
+        { kw: "tratamiento estres postraumatico", pos: 12, chg: 0, vol: 4400, diff: "hard", hist: [13,13,12,12,12,12,12], top3: 0, fall: 0 },
+        { kw: "psicologo especialista en trauma", pos: 7, chg: 4, vol: 3200, diff: "medium", hist: [15,14,12,11,9,7,7], top3: 0, fall: 0 },
+        { kw: "traumare psicologia", pos: 2, chg: 0, vol: 900, diff: "easy", hist: [2,2,2,2,2,2,2], top3: 1, fall: 0 },
+      ],
+      "dd262b94-b3c5-4e0a-8f7d-4f6b9c0e1a23": [
+        { kw: "participacion ciudadana blockchain", pos: 3, chg: 1, vol: 1500, diff: "easy", hist: [6,5,4,3,3,3,3], top3: 1, fall: 0 },
+        { kw: "votacion descentralizada", pos: 10, chg: -3, vol: 2800, diff: "medium", hist: [7,8,8,9,10,10,10], top3: 0, fall: 0 },
+        { kw: "herramientas participacion digital", pos: 14, chg: 5, vol: 2100, diff: "medium", hist: [20,19,18,17,15,14,14], top3: 0, fall: 0 },
+        { kw: "blockchain governança", pos: 8, chg: 0, vol: 1100, diff: "easy", hist: [8,8,8,8,8,8,8], top3: 0, fall: 0 },
       ],
       "3": [
         { kw: "recuperar blog antiguo", pos: 22, chg: -3, vol: 480, diff: "easy", hist: [18,19,20,20,21,22,22], top3: 0, fall: 1 },
@@ -128,6 +169,21 @@ function seed() {
         { domain: "growthhackers.io", pos: 8.9, trend: "down", highlight: 0 },
         { domain: "digitalfirst.com", pos: 10.2, trend: "flat", highlight: 0 },
       ],
+      "e74b0ab2-f1a3-4c8d-9e6b-2d5f7a8c9e01": [
+        { domain: "silviaclua.com", pos: 5.4, trend: "up", highlight: 0 },
+        { domain: "fotografo-barcelona.es", pos: 4.2, trend: "flat", highlight: 0 },
+        { domain: "bodasfotografia.com", pos: 7.8, trend: "up", highlight: 1 },
+      ],
+      "1e311052-a2b4-4d9e-7f6c-3e5a8b9d0f12": [
+        { domain: "traumare.com", pos: 6.8, trend: "up", highlight: 0 },
+        { domain: "psicologiabcn.es", pos: 5.1, trend: "flat", highlight: 0 },
+        { domain: "emdr-terapia.com", pos: 8.3, trend: "down", highlight: 1 },
+      ],
+      "dd262b94-b3c5-4e0a-8f7d-4f6b9c0e1a23": [
+        { domain: "blockchaintools.cat", pos: 5.6, trend: "up", highlight: 0 },
+        { domain: "governanca-digital.cat", pos: 7.1, trend: "flat", highlight: 0 },
+        { domain: "decidim.barcelona", pos: 9.5, trend: "up", highlight: 1 },
+      ],
     };
 
     let compCounter = 0;
@@ -154,6 +210,15 @@ function seed() {
       ],
       "5": [
         ["10 May",8.2],["12 May",7.9],["14 May",7.7],["16 May",7.4],["18 May",7.2],["20 May",6.9],["22 May",6.7],["24 May",6.5],["26 May",6.3],["28 May",6.1],["30 May",5.9],["1 Jun",5.8],["3 Jun",5.7],["5 Jun",5.6],["7 Jun",5.6],["8 Jun",5.6],
+      ],
+      "e74b0ab2-f1a3-4c8d-9e6b-2d5f7a8c9e01": [
+        ["10 May",10.2],["12 May",9.9],["14 May",9.6],["16 May",9.3],["18 May",9.0],["20 May",8.7],["22 May",8.4],["24 May",8.1],["26 May",7.8],["28 May",7.5],["30 May",7.2],["1 Jun",6.9],["3 Jun",6.6],["5 Jun",6.4],["7 Jun",6.2],["8 Jun",6.2],
+      ],
+      "1e311052-a2b4-4d9e-7f6c-3e5a8b9d0f12": [
+        ["10 May",9.5],["12 May",9.2],["14 May",9.0],["16 May",8.8],["18 May",8.5],["20 May",8.3],["22 May",8.1],["24 May",7.9],["26 May",7.7],["28 May",7.5],["30 May",7.3],["1 Jun",7.1],["3 Jun",6.9],["5 Jun",6.8],["7 Jun",6.8],["8 Jun",6.8],
+      ],
+      "dd262b94-b3c5-4e0a-8f7d-4f6b9c0e1a23": [
+        ["10 May",11.0],["12 May",10.8],["14 May",10.5],["16 May",10.3],["18 May",10.0],["20 May",9.8],["22 May",9.6],["24 May",9.4],["26 May",9.2],["28 May",9.0],["30 May",8.9],["1 Jun",8.8],["3 Jun",8.8],["5 Jun",8.8],["7 Jun",8.8],["8 Jun",8.8],
       ],
     };
 
