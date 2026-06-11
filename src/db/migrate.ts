@@ -128,6 +128,39 @@ try {
   if (!tenantCols.includes("telegram_chat_id")) {
     sqlite.exec("ALTER TABLE tenants ADD COLUMN telegram_chat_id TEXT");
   }
+  if (!tenantCols.includes("geo_provider_keys")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN geo_provider_keys TEXT");
+  }
+  if (!tenantCols.includes("geo_enabled_providers")) {
+    sqlite.exec("ALTER TABLE tenants ADD COLUMN geo_enabled_providers TEXT");
+  }
+
+  // GEO tables
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS geo_queries (
+      id TEXT PRIMARY KEY,
+      website_id TEXT NOT NULL REFERENCES websites(id) ON DELETE CASCADE,
+      keyword TEXT NOT NULL,
+      query TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'seo',
+      enabled INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS geo_results (
+      id TEXT PRIMARY KEY,
+      website_id TEXT NOT NULL REFERENCES websites(id) ON DELETE CASCADE,
+      query_id TEXT NOT NULL REFERENCES geo_queries(id) ON DELETE CASCADE,
+      provider TEXT NOT NULL,
+      brand_mentioned INTEGER NOT NULL DEFAULT 0,
+      mention_position INTEGER,
+      sentiment TEXT NOT NULL DEFAULT 'neutral',
+      snippet TEXT,
+      competitors_mentioned TEXT NOT NULL DEFAULT '[]',
+      response_full TEXT,
+      scanned_at TEXT NOT NULL DEFAULT ''
+    );
+  `);
 
   console.log("Tables created successfully");
 } catch (error) {

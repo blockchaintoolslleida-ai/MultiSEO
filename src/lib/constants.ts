@@ -6,7 +6,8 @@ export const NAV_SECTIONS: NavSectionData[] = [
   {
     title: "Principal",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: "LayoutGrid" },
+      { label: "Dashboard SEO", href: "/dashboard", icon: "LayoutGrid" },
+      { label: "GEO Tracker", href: "/geo", icon: "Bot" },
       { label: "Websites", href: "/websites", icon: "Globe" },
       { label: "Artículos", href: "/articles", icon: "FileText" },
       { label: "Rankings", href: "/rankings", icon: "TrendingUp" },

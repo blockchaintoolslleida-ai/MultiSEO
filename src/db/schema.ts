@@ -11,6 +11,8 @@ export const tenants = sqliteTable("tenants", {
   gscConnected: integer("gsc_connected").notNull().default(0),
   telegramBotToken: text("telegram_bot_token"),
   telegramChatId: text("telegram_chat_id"),
+  geoProviderKeys: text("geo_provider_keys"),
+  geoEnabledProviders: text("geo_enabled_providers"),
   createdAt: text("created_at").notNull().default(""),
 });
 
@@ -105,4 +107,28 @@ export const notifications = sqliteTable("notifications", {
   time: text("time").notNull().default(""),
   read: integer("read").notNull().default(0),
   createdAt: text("created_at").notNull().default(""),
+});
+
+export const geoQueries = sqliteTable("geo_queries", {
+  id: text("id").primaryKey(),
+  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  keyword: text("keyword").notNull(),
+  query: text("query").notNull(),
+  source: text("source").notNull().default("seo"),
+  enabled: integer("enabled").notNull().default(1),
+  createdAt: text("created_at").notNull().default(""),
+});
+
+export const geoResults = sqliteTable("geo_results", {
+  id: text("id").primaryKey(),
+  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  queryId: text("query_id").notNull().references(() => geoQueries.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(),
+  brandMentioned: integer("brand_mentioned").notNull().default(0),
+  mentionPosition: integer("mention_position"),
+  sentiment: text("sentiment").notNull().default("neutral"),
+  snippet: text("snippet"),
+  competitorsMentioned: text("competitors_mentioned").notNull().default("[]"),
+  responseFull: text("response_full"),
+  scannedAt: text("scanned_at").notNull().default(""),
 });

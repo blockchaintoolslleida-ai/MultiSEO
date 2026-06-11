@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { LayoutGrid, Globe, FileText, TrendingUp, BarChart3, Monitor, Settings } from "lucide-react";
+import { LayoutGrid, Globe, FileText, TrendingUp, BarChart3, Monitor, Settings, Bot } from "lucide-react";
 import type { NavItemData } from "@/types/seo";
 
 const iconMap: Record<string, LucideIcon> = {
-  LayoutGrid, Globe, FileText, TrendingUp, BarChart3, Monitor, Settings,
+  LayoutGrid, Globe, FileText, TrendingUp, BarChart3, Monitor, Settings, Bot,
 };
 
 interface NavItemProps {
