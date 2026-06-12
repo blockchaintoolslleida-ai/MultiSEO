@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getTenantId } from "@/lib/tenant";
+import { getTenantSecret } from "@/lib/tenant-secrets";
 
 export async function GET(request: Request) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
       data: {
         connected: tenant.gscConnected === 1,
         siteUrl: tenant.gscSiteUrl ?? "",
-        hasRefreshToken: !!tenant.gscRefreshToken,
+        hasRefreshToken: !!getTenantSecret(tenant, "gscRefreshToken"),
       },
     });
   } catch (error) {

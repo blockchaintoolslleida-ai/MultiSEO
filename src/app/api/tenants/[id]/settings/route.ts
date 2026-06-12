@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getTenantId, FORBIDDEN_ERROR } from "@/lib/tenant";
+import { getTenantSecret, setTenantSecret } from "@/lib/tenant-secrets";
 
 function maskKey(key: string): string {
   if (!key || key.length <= 8) return "***";
@@ -27,7 +28,7 @@ export async function GET(
 
     let geoProviderKeys: Record<string, string> = {};
     try {
-      geoProviderKeys = JSON.parse(tenant.geoProviderKeys || "{}");
+      geoProviderKeys = JSON.parse(getTenantSecret(tenant, "geoProviderKeys") || "{}");
     } catch { /* ignore */ }
 
     let geoEnabledProviders: string[] = [];
@@ -41,15 +42,18 @@ export async function GET(
       maskedKeys[k] = v ? maskKey(v) : "";
     }
 
+    const deepseekKey = getTenantSecret(tenant, "deepseekApiKey");
+    const telegramToken = getTenantSecret(tenant, "telegramBotToken");
+
     return Response.json({
       data: {
         geoProviderKeys: maskedKeys,
         geoEnabledProviders,
-        deepseekApiKey: tenant.deepseekApiKey ? maskKey(tenant.deepseekApiKey) : "",
+        deepseekApiKey: deepseekKey ? maskKey(deepseekKey) : "",
         gscConnected: tenant.gscConnected === 1,
         gscSiteUrl: tenant.gscSiteUrl ?? "",
-        telegramBotToken: tenant.telegramBotToken ? maskKey(tenant.telegramBotToken) : "",
-        telegramChatId: tenant.telegramChatId ?? "",
+        telegramBotToken: telegramToken ? maskKey(telegramToken) : "",
+        telegramChatId: getTenantSecret(tenant, "telegramChatId") ?? "",
       },
     });
   } catch (error) {
@@ -79,17 +83,17 @@ export async function PATCH(
     const body = await request.json();
     const updateData: Record<string, unknown> = {};
 
-    if (body.deepseekApiKey !== undefined) updateData.deepseekApiKey = body.deepseekApiKey;
-    if (body.telegramBotToken !== undefined) updateData.telegramBotToken = body.telegramBotToken;
-    if (body.telegramChatId !== undefined) updateData.telegramChatId = body.telegramChatId;
+    if (body.deepseekApiKey !== undefined) updateData.deepseekApiKey = setTenantSecret(body.deepseekApiKey);
+    if (body.telegramBotToken !== undefined) updateData.telegramBotToken = setTenantSecret(body.telegramBotToken);
+    if (body.telegramChatId !== undefined) updateData.telegramChatId = setTenantSecret(body.telegramChatId);
 
     // Merge geoProviderKeys
     if (body.geoProviderKeys !== undefined) {
       const current: Record<string, string> = (() => {
-        try { return JSON.parse(existing.geoProviderKeys || "{}"); } catch { return {}; }
+        try { return JSON.parse(getTenantSecret(existing, "geoProviderKeys") || "{}"); } catch { return {}; }
       })();
       const merged = { ...current, ...body.geoProviderKeys };
-      updateData.geoProviderKeys = JSON.stringify(merged);
+      updateData.geoProviderKeys = setTenantSecret(JSON.stringify(merged));
     }
 
     if (body.geoEnabledProviders !== undefined) {
@@ -103,7 +107,7 @@ export async function PATCH(
     // Return updated (masked) settings — reuse GET logic by calling ourselves
     const updated = db.select().from(tenants).where(eq(tenants.id, id)).get();
     let geoProviderKeys: Record<string, string> = {};
-    try { geoProviderKeys = JSON.parse(updated!.geoProviderKeys || "{}"); } catch {}
+    try { geoProviderKeys = JSON.parse(getTenantSecret(updated!, "geoProviderKeys") || "{}"); } catch {}
     let geoEnabledProviders: string[] = [];
     try { geoEnabledProviders = JSON.parse(updated!.geoEnabledProviders || '["deepseek"]'); } catch {}
 
@@ -112,15 +116,18 @@ export async function PATCH(
       maskedKeys[k] = v ? maskKey(v) : "";
     }
 
+    const deepseekKey = getTenantSecret(updated!, "deepseekApiKey");
+    const telegramToken = getTenantSecret(updated!, "telegramBotToken");
+
     return Response.json({
       data: {
         geoProviderKeys: maskedKeys,
         geoEnabledProviders,
-        deepseekApiKey: updated!.deepseekApiKey ? maskKey(updated!.deepseekApiKey!) : "",
+        deepseekApiKey: deepseekKey ? maskKey(deepseekKey) : "",
         gscConnected: updated!.gscConnected === 1,
         gscSiteUrl: updated!.gscSiteUrl ?? "",
-        telegramBotToken: updated!.telegramBotToken ? maskKey(updated!.telegramBotToken!) : "",
-        telegramChatId: updated!.telegramChatId ?? "",
+        telegramBotToken: telegramToken ? maskKey(telegramToken) : "",
+        telegramChatId: getTenantSecret(updated!, "telegramChatId") ?? "",
       },
     });
   } catch (error) {

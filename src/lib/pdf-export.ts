@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import { escapeHtml } from "./html";
 
 export interface PDFExportOptions {
   html: string;
@@ -51,7 +52,7 @@ export function buildReportHTML(data: {
 
   return `<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="utf-8"><title>${data.title}</title>
+<head><meta charset="utf-8"><title>${escapeHtml(data.title)}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: system-ui, -apple-system, sans-serif; color: #1f2937; padding: 0; }
@@ -74,14 +75,14 @@ export function buildReportHTML(data: {
 </style></head>
 <body>
   <div class="cover">
-    <p class="url">${data.websiteUrl}</p>
-    <h1>${data.title}</h1>
-    <p>${data.period}</p>
+    <p class="url">${escapeHtml(data.websiteUrl)}</p>
+    <h1>${escapeHtml(data.title)}</h1>
+    <p>${escapeHtml(data.period)}</p>
   </div>
   <div class="section">
     <h2>Resumen de KPIs</h2>
     <div class="kpi-grid">
-      ${data.kpis.map((k) => `<div class="kpi-card"><div class="value">${k.value}</div><div class="label">${k.label}</div></div>`).join("")}
+      ${data.kpis.map((k) => `<div class="kpi-card"><div class="value">${escapeHtml(k.value)}</div><div class="label">${escapeHtml(k.label)}</div></div>`).join("")}
     </div>
   </div>
   <div class="section">
@@ -90,7 +91,7 @@ export function buildReportHTML(data: {
       <thead><tr><th>Keyword</th><th>Posición</th><th>Cambio</th><th>Volumen</th></tr></thead>
       <tbody>
         ${data.keywords.map((k) => `<tr>
-          <td>${k.keyword}</td>
+          <td>${escapeHtml(k.keyword)}</td>
           <td>${k.position}</td>
           <td class="${k.change > 0 ? "pos-down" : "pos-up"}">${k.change > 0 ? "+" + k.change : k.change}</td>
           <td>${k.volume.toLocaleString("es-ES")}</td>

@@ -3,6 +3,7 @@ import { tenants, articles } from "@/db/schema";
 import { generateArticle } from "@/lib/deepseek";
 import { eq } from "drizzle-orm";
 import { getTenantId } from "@/lib/tenant";
+import { getTenantSecret } from "@/lib/tenant-secrets";
 import { parseBody, validationErrorResponse } from "@/lib/validate";
 import { z, ZodError } from "zod";
 
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    const apiKey = tenant.deepseekApiKey ?? process.env.DEEPSEEK_API_KEY;
+    const apiKey = getTenantSecret(tenant, "deepseekApiKey") ?? process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
       return Response.json(
         { error: "DeepSeek API key not configured. Set DEEPSEEK_API_KEY in .env.local or configure it for this tenant." },

@@ -3,6 +3,7 @@ import { tenants, websites, keywords, rankingHistory } from "@/db/schema";
 import { refreshAccessToken, getSearchAnalytics } from "@/lib/google-search-console";
 import { eq, and } from "drizzle-orm";
 import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
+import { getTenantSecret, setTenantSecret } from "@/lib/tenant-secrets";
 
 export async function POST(request: Request) {
   try {
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    if (!tenant.gscRefreshToken) {
+    if (!getTenantSecret(tenant, "gscRefreshToken")) {
       return Response.json(
         { error: "Google Search Console not connected. Go to Configuración → Conectar GSC." },
         { status: 400 }
@@ -33,13 +34,14 @@ export async function POST(request: Request) {
     }
 
     // Refresh access token
-    let accessToken = tenant.gscAccessToken;
+    let accessToken = getTenantSecret(tenant, "gscAccessToken");
     try {
-      const refreshed = await refreshAccessToken(tenant.gscRefreshToken);
+      const refreshToken = getTenantSecret(tenant, "gscRefreshToken");
+      const refreshed = await refreshAccessToken(refreshToken!);
       accessToken = refreshed.access_token;
       // Update stored token
       db.update(tenants)
-        .set({ gscAccessToken: accessToken })
+        .set({ gscAccessToken: setTenantSecret(accessToken!) })
         .where(eq(tenants.id, tenantId))
         .run();
     } catch {

@@ -4,18 +4,15 @@ import { ChatGPTGEOProvider } from "./chatgpt";
 import { PerplexityGEOProvider } from "./perplexity";
 import { GoogleAIGEOProvider } from "./google";
 import { CopilotGEOProvider } from "./copilot";
+import { getTenantSecret } from "@/lib/tenant-secrets";
 
-export function getGEOProviders(tenant: {
-  deepseekApiKey?: string | null;
-  geoProviderKeys?: string | null;
-  geoEnabledProviders?: string | null;
-}): GEOProvider[] {
+export function getGEOProviders(tenant: Record<string, unknown>): GEOProvider[] {
   const providers: GEOProvider[] = [];
 
   // Get enabled list (default: deepseek only)
   const enabled: string[] = (() => {
     try {
-      return JSON.parse(tenant.geoEnabledProviders || '["deepseek"]');
+      return JSON.parse((tenant.geoEnabledProviders as string) || '["deepseek"]');
     } catch {
       return ["deepseek"];
     }
@@ -24,7 +21,7 @@ export function getGEOProviders(tenant: {
   // Get API keys
   const keys: Record<string, string> = (() => {
     try {
-      return JSON.parse(tenant.geoProviderKeys || "{}");
+      return JSON.parse(getTenantSecret(tenant, "geoProviderKeys") || "{}");
     } catch {
       return {};
     }
@@ -32,7 +29,7 @@ export function getGEOProviders(tenant: {
 
   // DeepSeek: use tenant-specific key, fallback to env
   const deepseekKey =
-    keys.deepseek || tenant.deepseekApiKey || process.env.DEEPSEEK_API_KEY;
+    keys.deepseek || getTenantSecret(tenant, "deepseekApiKey") || process.env.DEEPSEEK_API_KEY;
   if (enabled.includes("deepseek") && deepseekKey) {
     providers.push(new DeepSeekGEOProvider({ apiKey: deepseekKey }));
   }

@@ -1,3 +1,5 @@
+import { escapeHtml } from "./html";
+
 const TELEGRAM_API = "https://api.telegram.org";
 
 export async function sendTelegramMessage(
@@ -48,5 +50,5 @@ export async function getTelegramUpdates(
 export function formatSEOAlert(kw: { keyword: string; position: number; change: number }): string {
   const emoji = kw.change > 0 ? "🔴" : kw.change < 0 ? "🟢" : "⚪";
   const arrow = kw.change > 0 ? "subió" : kw.change < 0 ? "bajó" : "sin cambios";
-  return `${emoji} <b>${kw.keyword}</b>: pos ${kw.position} (${arrow} ${Math.abs(kw.change)})`;
+  return `${emoji} <b>${escapeHtml(kw.keyword)}</b>: pos ${kw.position} (${arrow} ${Math.abs(kw.change)})`;
 }
