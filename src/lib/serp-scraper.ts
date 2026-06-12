@@ -189,7 +189,9 @@ export async function scrapeWebsiteKeywords(
       // Rate limiting between searches
       await delay(5000 + Math.random() * 5000);
     } catch (error) {
-      console.error(`Failed to scrape "${kw}":`, error);
+      if (process.env.NODE_ENV === "development") {
+        console.error(`Failed to scrape "${kw}":`, error);
+      }
       // Continue with next keyword even if one fails
     }
   }

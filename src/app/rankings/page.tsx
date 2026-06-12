@@ -2,14 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTenant } from "@/hooks/use-tenant";
+import { useWebsiteSelector } from "@/hooks/use-website-selector";
 import { TrendingUp } from "lucide-react";
 import { KeywordsAdvancedTable } from "@/components/rankings/keywords-advanced-table";
 import type { KeywordData } from "@/types/seo";
-
-interface WebsiteOption {
-  id: string;
-  domain: string;
-}
 
 interface RankingsData {
   keywords: KeywordData[];
@@ -30,8 +26,7 @@ interface RankingsData {
 
 export default function RankingsPage() {
   const { tenant } = useTenant();
-  const [websiteId, setWebsiteId] = useState("1");
-  const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
+  const { websiteId, setWebsiteId, websitesList } = useWebsiteSelector();
   const [data, setData] = useState<RankingsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -68,23 +63,7 @@ export default function RankingsPage() {
     }
   }, [websiteId, search, sort, order, page, difficulty]);
 
-  useEffect(() => {
-    fetchKeywords();
-  }, [fetchKeywords]);
-
-  // Fetch websites list
-  useEffect(() => {
-    if (!tenant) return;
-    fetch(`/api/websites`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.data) {
-          setWebsitesList(json.data.map((w: any) => ({ id: w.id, domain: w.domain })));
-          if (json.data.length > 0) setWebsiteId(json.data[0].id);
-        }
-      })
-      .catch(() => {});
-  }, [tenant]);
+  useEffect(() => { void fetchKeywords(); }, [fetchKeywords]); // eslint-disable-line react-hooks/set-state-in-effect
 
   const handleDelete = async (id: string) => {
     try {

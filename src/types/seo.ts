@@ -1,3 +1,9 @@
+// === Shared types ===
+export interface WebsiteOption {
+  id: string;
+  domain: string;
+}
+
 // === Dashboard SEO ===
 export interface KPIMetric {
   value: number;

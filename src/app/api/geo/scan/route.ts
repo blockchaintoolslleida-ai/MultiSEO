@@ -98,10 +98,12 @@ export async function POST(request: Request) {
           // Rate limiting between calls
           await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (err) {
-          console.error(
-            `GEO scan failed for query "${gq.query}" with provider ${provider.id}:`,
-            err
-          );
+          if (process.env.NODE_ENV === "development") {
+            console.error(
+              `GEO scan failed for query "${gq.query}" with provider ${provider.id}:`,
+              err
+            );
+          }
           // Continue with other queries
         }
       }

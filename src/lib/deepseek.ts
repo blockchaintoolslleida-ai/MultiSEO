@@ -145,8 +145,10 @@ export async function generateArticle(params: GenerateParams): Promise<Generated
     return JSON.parse(sanitized);
   } catch (parseError) {
     // If sanitization didn't help, log the raw content for debugging and rethrow
-    console.error("DeepSeek JSON parse error. Raw content (first 500 chars):", rawContent.slice(0, 500));
-    console.error("Sanitized (first 500 chars):", sanitized.slice(0, 500));
+    if (process.env.NODE_ENV === "development") {
+      console.error("DeepSeek JSON parse error. Raw content (first 500 chars):", rawContent.slice(0, 500));
+      console.error("Sanitized (first 500 chars):", sanitized.slice(0, 500));
+    }
     throw new Error(
       `DeepSeek returned malformed JSON: ${parseError instanceof Error ? parseError.message : "Unknown parse error"}. Try regenerating.`
     );

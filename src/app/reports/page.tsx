@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
+import { useWebsiteSelector } from "@/hooks/use-website-selector";
 import type { ReportData } from "@/types/seo";
 import { ReportCard } from "@/components/reports/report-card";
 import { ShareLinks } from "@/components/reports/share-links";
@@ -15,15 +16,9 @@ interface ReportStats {
   draft: number;
 }
 
-interface WebsiteOption {
-  id: string;
-  domain: string;
-}
-
 export default function ReportsPage() {
   const { tenant } = useTenant();
-  const [websiteId, setWebsiteId] = useState("1");
-  const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
+  const { websiteId, setWebsiteId, websitesList } = useWebsiteSelector();
   const { data: reports, loading: rLoading } = useApi<ReportData[]>(
     tenant ? `/api/reports` : ""
   );
@@ -31,22 +26,6 @@ export default function ReportsPage() {
     tenant ? `/api/reports/stats` : ""
   );
   const [exporting, setExporting] = useState(false);
-
-  const loading = rLoading || sLoading || !tenant;
-
-  // Fetch websites list for the selector
-  useEffect(() => {
-    if (!tenant) return;
-    fetch(`/api/websites`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.data) {
-          setWebsitesList(json.data.map((w: any) => ({ id: w.id, domain: w.domain })));
-          if (json.data.length > 0) setWebsiteId(json.data[0].id);
-        }
-      })
-      .catch(() => {});
-  }, [tenant]);
 
   const handleExportPDF = async () => {
     setExporting(true);
@@ -71,7 +50,7 @@ export default function ReportsPage() {
     }
   };
 
-  if (loading) {
+  if (rLoading || sLoading) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
         <div className="text-center">

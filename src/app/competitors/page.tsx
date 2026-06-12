@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
+import { useWebsiteSelector } from "@/hooks/use-website-selector";
 import type {
   CompetitorFull,
   CompetitorKPIs,
@@ -16,11 +16,6 @@ import { CompetitorComparator } from "@/components/competitors/competitor-compar
 import { CompetitorIntelligence } from "@/components/competitors/competitor-intelligence";
 import { CompetitorManager } from "@/components/competitors/competitor-manager";
 
-interface WebsiteOption {
-  id: string;
-  domain: string;
-}
-
 interface CompetitorsFullData {
   kpis: CompetitorKPIs;
   competitors: CompetitorFull[];
@@ -30,27 +25,11 @@ interface CompetitorsFullData {
 
 export default function CompetitorsPage() {
   const { tenant } = useTenant();
-  const [websiteId, setWebsiteId] = useState("1");
-  const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
+  const { websiteId, setWebsiteId, websitesList } = useWebsiteSelector();
 
   const { data, loading, refetch } = useApi<CompetitorsFullData>(
     tenant ? `/api/competitors?websiteId=${websiteId}` : ""
   );
-
-  useEffect(() => {
-    if (!tenant) return;
-    fetch(`/api/websites`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.data) {
-          setWebsitesList(
-            json.data.map((w: any) => ({ id: w.id, domain: w.domain }))
-          );
-          if (json.data.length > 0) setWebsiteId(json.data[0].id);
-        }
-      })
-      .catch(() => {});
-  }, [tenant]);
 
   const kpis = data?.kpis;
   const competitors = data?.competitors ?? [];
@@ -131,7 +110,7 @@ export default function CompetitorsPage() {
       {/* Ranking - full width */}
       <CompetitorRanking
         competitors={competitors}
-        onSelect={(id) => {
+        onSelect={() => {
           document.getElementById("comparator-section")?.scrollIntoView({ behavior: "smooth" });
         }}
       />

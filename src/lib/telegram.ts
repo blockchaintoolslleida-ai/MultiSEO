@@ -37,7 +37,7 @@ export async function getTelegramUpdates(
 
     if (!data.ok || !data.result) return [];
 
-    return data.result.map((u: any) => ({
+    return data.result.map((u: { update_id: number; message?: { chat?: { id: number }; text?: string } }) => ({
       updateId: u.update_id,
       chatId: String(u.message?.chat?.id ?? ""),
       text: u.message?.text ?? "",

@@ -1,9 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
+import { useWebsiteSelector } from "@/hooks/use-website-selector";
 import type { SEODashboardData } from "@/types/seo";
+import { GSC_POPUP_SIZE, GSC_POPUP_POLL_MS } from "@/lib/constants";
 import { KPIGrid } from "@/components/seo/kpi-grid";
 import { RankingChart } from "@/components/seo/ranking-chart";
 import { CompetitorPanel } from "@/components/seo/competitor-panel";
@@ -15,15 +17,9 @@ interface GSCStatus {
   hasRefreshToken: boolean;
 }
 
-interface WebsiteOption {
-  id: string;
-  domain: string;
-}
-
 export default function DashboardPage() {
   const { tenant } = useTenant();
-  const [websiteId, setWebsiteId] = useState("1");
-  const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
+  const { websiteId, setWebsiteId, websitesList, loading: websitesLoading } = useWebsiteSelector();
   const { data, loading, refetch } = useApi<SEODashboardData>(`/api/dashboard?websiteId=${websiteId}`);
   const [scraping, setScraping] = useState(false);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
@@ -43,8 +39,9 @@ export default function DashboardPage() {
       const res = await fetch(`/api/gsc/status`);
       const json = await res.json();
       if (res.ok) setGscStatus(json.data);
-    } catch {
+    } catch (err) {
       // GSC not configured
+      if (process.env.NODE_ENV === "development") console.error("GSC status check failed:", err);
     }
     // Also fetch sync status for this website
     try {
@@ -53,29 +50,13 @@ export default function DashboardPage() {
       if (syncRes.ok && syncJson.data) {
         setGscSyncLabel(syncJson.data.lastSyncLabel);
       }
-    } catch {
+    } catch (err) {
       // Ignore
+      if (process.env.NODE_ENV === "development") console.error("GSC sync status check failed:", err);
     }
   }, [tenant, websiteId]);
 
-  useEffect(() => {
-    checkGSCStatus();
-  }, [checkGSCStatus]);
-
-  // Fetch websites list for the selector
-  useEffect(() => {
-    if (!tenant) return;
-    fetch(`/api/websites`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.data) {
-          setWebsitesList(json.data.map((w: any) => ({ id: w.id, domain: w.domain })));
-          // Auto-select first real website
-          if (json.data.length > 0) setWebsiteId(json.data[0].id);
-        }
-      })
-      .catch(() => {});
-  }, [tenant]);
+  useEffect(() => { void checkGSCStatus(); }, [checkGSCStatus]); // eslint-disable-line react-hooks/set-state-in-effect
 
   const handleConnectGSC = async () => {
     try {
@@ -83,7 +64,7 @@ export default function DashboardPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       // Open OAuth URL in popup
-      const popup = window.open(json.data.authUrl, "gsc-auth", "width=600,height=700");
+      const popup = window.open(json.data.authUrl, "gsc-auth", `width=${GSC_POPUP_SIZE.WIDTH},height=${GSC_POPUP_SIZE.HEIGHT}`);
       if (!popup) {
         // Fallback: open in same window
         window.location.href = json.data.authUrl;
@@ -95,7 +76,7 @@ export default function DashboardPage() {
           clearInterval(interval);
           checkGSCStatus();
         }
-      }, 500);
+      }, GSC_POPUP_POLL_MS);
     } catch (err) {
       setGscError(err instanceof Error ? err.message : "Error");
     }
@@ -169,7 +150,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading || !data) {
+  if (loading || websitesLoading || !data) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
         <div className="text-center">

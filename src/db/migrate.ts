@@ -1,6 +1,8 @@
 import Database from "better-sqlite3";
 import * as path from "path";
 
+interface PragmaColumn { cid: number; name: string; type: string; notnull: number; dflt_value: string | null; pk: number; }
+
 const DB_PATH = path.resolve(process.cwd(), "multiseo.db");
 const sqlite = new Database(DB_PATH);
 
@@ -109,7 +111,7 @@ try {
   `);
 
   // GSC columns (add if not exist — SQLite doesn't support IF NOT EXISTS for ALTER)
-  const tenantCols = (sqlite.pragma("table_info(tenants)") as any[]).map((c: any) => c.name);
+  const tenantCols = (sqlite.pragma("table_info(tenants)") as PragmaColumn[]).map((c: PragmaColumn) => c.name);
   if (!tenantCols.includes("gsc_refresh_token")) {
     sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_refresh_token TEXT");
   }
@@ -139,7 +141,7 @@ try {
   }
 
   // Competitors new columns
-  const compCols = (sqlite.pragma("table_info(competitors)") as any[]).map((c: any) => c.name);
+  const compCols = (sqlite.pragma("table_info(competitors)") as PragmaColumn[]).map((c: PragmaColumn) => c.name);
   if (!compCols.includes("keywords_overlap")) {
     sqlite.exec("ALTER TABLE competitors ADD COLUMN keywords_overlap TEXT NOT NULL DEFAULT '[]'");
   }
@@ -154,7 +156,7 @@ try {
   }
 
   // Websites — last_gsc_sync
-  const webCols = (sqlite.pragma("table_info(websites)") as any[]).map((c: any) => c.name);
+  const webCols = (sqlite.pragma("table_info(websites)") as PragmaColumn[]).map((c: PragmaColumn) => c.name);
   if (!webCols.includes("last_gsc_sync")) {
     sqlite.exec("ALTER TABLE websites ADD COLUMN last_gsc_sync TEXT");
   }

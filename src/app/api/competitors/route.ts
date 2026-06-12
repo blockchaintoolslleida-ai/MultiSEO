@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { competitors, keywords, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import type { CompetitorFull, CompetitorKPIs, OverlapMatrixRow, CompetitorRecommendation } from "@/types/seo";
+import { ONE_WEEK_MS, POSITION_THRESHOLDS, MAX_RECOMMENDATIONS } from "@/lib/constants";
 import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
@@ -72,7 +73,7 @@ export async function GET(request: Request) {
     }
 
     const yourAvgPosition = website.avgPosition;
-    const top3Comps = compRows.filter((c) => c.domain !== website.domain).slice(0, 3);
+    const top3Comps = compRows.filter((c) => c.domain !== website.domain).slice(0, POSITION_THRESHOLDS.TOP3);
     const top3AvgPosition =
       top3Comps.length > 0
         ? Math.round((top3Comps.reduce((s, c) => s + c.avgPosition, 0) / top3Comps.length) * 10) / 10
@@ -157,7 +158,7 @@ export async function GET(request: Request) {
       }
     }
 
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const weekAgo = new Date(Date.now() - ONE_WEEK_MS).toISOString();
     for (const c of compsFull) {
       if (c.lastUpdated >= weekAgo && c.isManual) {
         recommendations.push({
@@ -173,7 +174,7 @@ export async function GET(request: Request) {
 
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     recommendations.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-    const topRecommendations = recommendations.slice(0, 10);
+    const topRecommendations = recommendations.slice(0, MAX_RECOMMENDATIONS);
 
     return Response.json({
       data: { kpis, competitors: compsFull, overlapMatrix, recommendations: topRecommendations },

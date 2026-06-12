@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
+import { useWebsiteSelector } from "@/hooks/use-website-selector";
 import type {
   GEOKPI,
   GEOQueryResult,
@@ -14,11 +15,6 @@ import { ShareOfVoiceChart } from "@/components/geo/share-of-voice-chart";
 import { VisibilityList } from "@/components/geo/visibility-list";
 import { RecommendationsPanel } from "@/components/geo/recommendations-panel";
 import { QueryManager } from "@/components/geo/query-manager";
-
-interface WebsiteOption {
-  id: string;
-  domain: string;
-}
 
 interface GEOResultsData {
   kpis: GEOKPI;
@@ -37,8 +33,7 @@ interface GeoQuery {
 
 export default function GeoPage() {
   const { tenant } = useTenant();
-  const [websiteId, setWebsiteId] = useState("1");
-  const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
+  const { websiteId, setWebsiteId, websitesList } = useWebsiteSelector();
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
@@ -69,21 +64,6 @@ export default function GeoPage() {
     refetchRecs();
     refetchQueries();
   }, [refetchResults, refetchSOV, refetchRecs, refetchQueries]);
-
-  useEffect(() => {
-    if (!tenant) return;
-    fetch(`/api/websites`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.data) {
-          setWebsitesList(
-            json.data.map((w: any) => ({ id: w.id, domain: w.domain }))
-          );
-          if (json.data.length > 0) setWebsiteId(json.data[0].id);
-        }
-      })
-      .catch(() => {});
-  }, [tenant]);
 
   const handleScan = async () => {
     setScanning(true);

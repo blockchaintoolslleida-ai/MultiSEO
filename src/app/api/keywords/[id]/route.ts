@@ -25,11 +25,10 @@ export async function PATCH(
       updateData.position = body.position;
       updateData.isTop3 = body.position <= 3 ? 1 : 0;
 
-      // Update history
-      const history = (() => { try { return JSON.parse(existing.history); } catch { return []; } })();
-      history.push(body.position);
-      if (history.length > 30) history.shift();
-      updateData.history = JSON.stringify(history);
+      // Update history (immutable: push then trim to last 30)
+      const rawHistory: number[] = (() => { try { return JSON.parse(existing.history); } catch { return []; } })();
+      const newHistory = [...rawHistory, body.position].slice(-30);
+      updateData.history = JSON.stringify(newHistory);
 
       // Compute change from last known position
       updateData.change = body.position - existing.position;

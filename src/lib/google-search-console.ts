@@ -141,5 +141,5 @@ export async function listSites(accessToken: string): Promise<string[]> {
   }
 
   const data = await res.json();
-  return (data.siteEntry ?? []).map((s: any) => s.siteUrl);
+  return (data.siteEntry ?? []).map((s: { siteUrl: string }) => s.siteUrl);
 }

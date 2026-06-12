@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CompetitorFull, OverlapMatrixRow } from "@/types/seo";
+import { SELECTION_MAX_COMPETITORS, DOMAIN_TRUNCATE_LENGTH } from "@/lib/constants";
 
 interface CompetitorComparatorProps {
   competitors: CompetitorFull[];
@@ -22,7 +23,7 @@ export function CompetitorComparator({
     const next = new Set(selectedIds);
     if (next.has(id)) {
       next.delete(id);
-    } else if (next.size < 3) {
+    } else if (next.size < SELECTION_MAX_COMPETITORS) {
       next.add(id);
     }
     setSelectedIds(next);
@@ -79,7 +80,7 @@ export function CompetitorComparator({
               }`}
             >
               <div className="text-[13px] font-semibold text-gray-800 mb-1 flex items-center gap-1">
-                {col.domain.length > 18 ? col.domain.slice(0, 18) + "…" : col.domain}
+                {col.domain.length > DOMAIN_TRUNCATE_LENGTH ? col.domain.slice(0, DOMAIN_TRUNCATE_LENGTH) + "…" : col.domain}
                 {col.isYou && (
                   <span className="text-[10px] bg-brand-200 text-brand-700 rounded-full px-1">
                     tú

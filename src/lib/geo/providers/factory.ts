@@ -7,8 +7,6 @@ import { CopilotGEOProvider } from "./copilot";
 import { getTenantSecret } from "@/lib/tenant-secrets";
 
 export function getGEOProviders(tenant: Record<string, unknown>): GEOProvider[] {
-  const providers: GEOProvider[] = [];
-
   // Get enabled list (default: deepseek only)
   const enabled: string[] = (() => {
     try {
@@ -27,36 +25,21 @@ export function getGEOProviders(tenant: Record<string, unknown>): GEOProvider[] 
     }
   })();
 
-  // DeepSeek: use tenant-specific key, fallback to env
+  // Build candidate providers with their keys
   const deepseekKey =
     keys.deepseek || getTenantSecret(tenant, "deepseekApiKey") || process.env.DEEPSEEK_API_KEY;
-  if (enabled.includes("deepseek") && deepseekKey) {
-    providers.push(new DeepSeekGEOProvider({ apiKey: deepseekKey }));
-  }
-
-  // ChatGPT (OpenAI)
   const chatgptKey = keys.chatgpt || process.env.OPENAI_API_KEY;
-  if (enabled.includes("chatgpt") && chatgptKey) {
-    providers.push(new ChatGPTGEOProvider({ apiKey: chatgptKey }));
-  }
-
-  // Perplexity
   const perplexityKey = keys.perplexity || process.env.PERPLEXITY_API_KEY;
-  if (enabled.includes("perplexity") && perplexityKey) {
-    providers.push(new PerplexityGEOProvider({ apiKey: perplexityKey }));
-  }
-
-  // Google AI (Gemini)
   const googleKey = keys.google || process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY;
-  if (enabled.includes("google") && googleKey) {
-    providers.push(new GoogleAIGEOProvider({ apiKey: googleKey }));
-  }
-
-  // Copilot (Azure OpenAI) — model field: "resource:deployment"
   const copilotKey = keys.copilot || process.env.AZURE_OPENAI_API_KEY;
-  if (enabled.includes("copilot") && copilotKey) {
-    providers.push(new CopilotGEOProvider({ apiKey: copilotKey }));
-  }
 
-  return providers;
+  const candidates: [string, GEOProvider | null][] = [
+    ["deepseek", enabled.includes("deepseek") && deepseekKey ? new DeepSeekGEOProvider({ apiKey: deepseekKey }) : null],
+    ["chatgpt", enabled.includes("chatgpt") && chatgptKey ? new ChatGPTGEOProvider({ apiKey: chatgptKey }) : null],
+    ["perplexity", enabled.includes("perplexity") && perplexityKey ? new PerplexityGEOProvider({ apiKey: perplexityKey }) : null],
+    ["google", enabled.includes("google") && googleKey ? new GoogleAIGEOProvider({ apiKey: googleKey }) : null],
+    ["copilot", enabled.includes("copilot") && copilotKey ? new CopilotGEOProvider({ apiKey: copilotKey }) : null],
+  ];
+
+  return candidates.filter(([, p]) => p !== null).map(([, p]) => p as GEOProvider);
 }
