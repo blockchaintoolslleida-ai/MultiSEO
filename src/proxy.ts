@@ -12,7 +12,8 @@ const PUBLIC_PREFIXES = ["/_next", "/favicon.ico", "/.well-known"];
 // Methods that require CSRF validation
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
+  // Previously known as middleware — renamed for Next.js 16 proxy convention.
   const { pathname } = request.nextUrl;
 
   // Allow public paths
