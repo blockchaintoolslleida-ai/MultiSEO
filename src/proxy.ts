@@ -41,10 +41,7 @@ export async function middleware(request: NextRequest) {
     const csrfHeader = request.headers.get("x-csrf-token");
 
     if (!csrfCookie?.value || !csrfHeader || csrfCookie.value !== csrfHeader) {
-      return NextResponse.json(
-        { error: "CSRF validation failed" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "CSRF validation failed" }, { status: 403 });
     }
   }
 
@@ -64,7 +61,5 @@ function redirectToLogin(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image).*)"],
 };

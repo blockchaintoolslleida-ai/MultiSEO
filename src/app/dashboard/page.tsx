@@ -20,7 +20,9 @@ interface GSCStatus {
 export default function DashboardPage() {
   const { tenant } = useTenant();
   const { websiteId, setWebsiteId, websitesList, loading: websitesLoading } = useWebsiteSelector();
-  const { data, loading, refetch } = useApi<SEODashboardData>(`/api/dashboard?websiteId=${websiteId}`);
+  const { data, loading, refetch } = useApi<SEODashboardData>(
+    `/api/dashboard?websiteId=${websiteId}`
+  );
   const [scraping, setScraping] = useState(false);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [scrapeResult, setScrapeResult] = useState<string | null>(null);
@@ -52,11 +54,17 @@ export default function DashboardPage() {
       }
     } catch (err) {
       // Ignore
-      if (process.env.NODE_ENV === "development") console.error("GSC sync status check failed:", err);
+      if (process.env.NODE_ENV === "development")
+        console.error("GSC sync status check failed:", err);
     }
   }, [tenant, websiteId]);
 
-  useEffect(() => { void checkGSCStatus(); }, [checkGSCStatus]); // eslint-disable-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void checkGSCStatus();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [checkGSCStatus]);
 
   const handleConnectGSC = async () => {
     try {
@@ -64,7 +72,11 @@ export default function DashboardPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       // Open OAuth URL in popup
-      const popup = window.open(json.data.authUrl, "gsc-auth", `width=${GSC_POPUP_SIZE.WIDTH},height=${GSC_POPUP_SIZE.HEIGHT}`);
+      const popup = window.open(
+        json.data.authUrl,
+        "gsc-auth",
+        `width=${GSC_POPUP_SIZE.WIDTH},height=${GSC_POPUP_SIZE.HEIGHT}`
+      );
       if (!popup) {
         // Fallback: open in same window
         window.location.href = json.data.authUrl;
@@ -96,7 +108,9 @@ export default function DashboardPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "GSC sync failed");
       const d = json.data;
-      setGscResult(`${d.keywordsImported} nuevas, ${d.keywordsUpdated} actualizadas · ${d.totalImpressions.toLocaleString()} impresiones`);
+      setGscResult(
+        `${d.keywordsImported} nuevas, ${d.keywordsUpdated} actualizadas · ${d.totalImpressions.toLocaleString()} impresiones`
+      );
       setGscSyncLabel("Ahora");
       refetch();
     } catch (err) {
@@ -141,7 +155,9 @@ export default function DashboardPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Audit failed");
       const s = json.data.scores;
-      setAuditResult(`Health ${Math.round((s.performance + s.accessibility + s.bestPractices + s.seo) / 4)}% · Perf ${s.performance} · SEO ${s.seo}`);
+      setAuditResult(
+        `Health ${Math.round((s.performance + s.accessibility + s.bestPractices + s.seo) / 4)}% · Perf ${s.performance} · SEO ${s.seo}`
+      );
       refetch();
     } catch (err) {
       setAuditError(err instanceof Error ? err.message : "Error");
@@ -165,14 +181,41 @@ export default function DashboardPage() {
     <div>
       <div className="flex items-center gap-1.5 text-[13px] text-gray-400 mb-5">
         <span className="text-brand-600 inline-flex items-center gap-1">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
           {tenant?.name ?? "Demo Company"}
         </span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
         <span>{data.websiteUrl}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
         <span className="text-gray-700 font-medium">Dashboard SEO</span>
       </div>
       <div className="flex items-center justify-between mb-5">
@@ -185,7 +228,9 @@ export default function DashboardPage() {
               className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 font-medium focus:outline-none focus:border-brand-400"
             >
               {websitesList.map((w) => (
-                <option key={w.id} value={w.id}>{w.domain}</option>
+                <option key={w.id} value={w.id}>
+                  {w.domain}
+                </option>
               ))}
             </select>
           )}
@@ -209,8 +254,17 @@ export default function DashboardPage() {
                 disabled={gscSyncing}
                 className="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-blue-100 disabled:opacity-50"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={gscSyncing ? "animate-spin" : ""}>
-                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={gscSyncing ? "animate-spin" : ""}
+                >
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                 </svg>
                 {gscSyncing ? "Sincronizando GSC..." : "Sincronizar GSC"}
               </button>
@@ -220,8 +274,18 @@ export default function DashboardPage() {
               onClick={handleConnectGSC}
               className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-gray-50"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><circle cx="9" cy="9" r="3"/><circle cx="15" cy="9" r="2.5"/><path d="M17.5 19.5c0-3.5-2.46-5.5-5.5-5.5s-5.5 2-5.5 5.5"/>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                <circle cx="9" cy="9" r="3" />
+                <circle cx="15" cy="9" r="2.5" />
+                <path d="M17.5 19.5c0-3.5-2.46-5.5-5.5-5.5s-5.5 2-5.5 5.5" />
               </svg>
               Conectar GSC
             </button>
@@ -232,8 +296,17 @@ export default function DashboardPage() {
             disabled={scraping}
             className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-gray-50 disabled:opacity-50"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={scraping ? "animate-spin" : ""}>
-              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={scraping ? "animate-spin" : ""}
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
             </svg>
             {scraping ? "Actualizando..." : "Actualizar Rankings"}
           </button>
@@ -242,8 +315,16 @@ export default function DashboardPage() {
             disabled={auditing}
             className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 hover:bg-gray-50 disabled:opacity-50"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={auditing ? "animate-spin" : ""}>
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={auditing ? "animate-spin" : ""}
+            >
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
             </svg>
             {auditing ? "Auditando..." : "Auditar SEO"}
           </button>
