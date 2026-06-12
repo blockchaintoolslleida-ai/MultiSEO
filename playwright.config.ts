@@ -16,8 +16,13 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+    },
+    {
       name: "chromium",
       use: { browserName: "chromium" },
+      dependencies: ["setup"],
     },
   ],
   webServer: {
