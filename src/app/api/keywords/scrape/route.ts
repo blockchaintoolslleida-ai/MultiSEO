@@ -1,9 +1,12 @@
 import { db } from "@/db";
-import { websites, keywords, competitors, rankingHistory } from "@/db/schema";
+import { keywords, competitors, rankingHistory, websites } from "@/db/schema";
 import { scrapeWebsiteKeywords } from "@/lib/serp-scraper";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const { websiteId } = body;
@@ -12,10 +15,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "websiteId is required" }, { status: 400 });
     }
 
-    const website = db.select().from(websites).where(eq(websites.id, websiteId)).get();
-    if (!website) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    const website = verifyWebsiteOwnership(websiteId, tenantId);
 
     // Get keywords for this website
     const kwList = db.select().from(keywords).where(eq(keywords.websiteId, websiteId)).all();
@@ -119,6 +119,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "Scraping failed";
     return Response.json({ error: message }, { status: 500 });
   }

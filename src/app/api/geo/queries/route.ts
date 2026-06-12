@@ -1,8 +1,11 @@
 import { db } from "@/db";
 import { geoQueries } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const websiteId = searchParams.get("websiteId");
@@ -14,6 +17,8 @@ export async function GET(request: Request) {
       );
     }
 
+    verifyWebsiteOwnership(websiteId, tenantId);
+
     const rows = db
       .select()
       .from(geoQueries)
@@ -22,11 +27,14 @@ export async function GET(request: Request) {
 
     return Response.json({ data: rows });
   } catch (error) {
+    if (error instanceof Response) throw error;
     return Response.json({ error: "Failed to fetch GEO queries" }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const { websiteId, keyword, query } = body;
@@ -37,6 +45,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     // Check for duplicate
     const existing = db
@@ -70,6 +80,7 @@ export async function POST(request: Request) {
     const created = db.select().from(geoQueries).where(eq(geoQueries.id, id)).get();
     return Response.json({ data: created }, { status: 201 });
   } catch (error) {
+    if (error instanceof Response) throw error;
     return Response.json({ error: "Failed to create GEO query" }, { status: 500 });
   }
 }

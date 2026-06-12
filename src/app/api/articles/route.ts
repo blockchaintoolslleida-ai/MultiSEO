@@ -1,32 +1,27 @@
 import { db } from "@/db";
 import { articles, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId");
+    const tenantId = getTenantId(request);
 
-    let rows;
-    if (tenantId) {
-      // JOIN articles → websites to filter by tenant
-      const tenantWebsites = db.select({ id: websites.id })
-        .from(websites)
-        .where(eq(websites.tenantId, tenantId))
-        .all();
-      const websiteIds = tenantWebsites.map((w) => w.id);
+    // JOIN articles → websites to filter by tenant
+    const tenantWebsites = db.select({ id: websites.id })
+      .from(websites)
+      .where(eq(websites.tenantId, tenantId))
+      .all();
+    const websiteIds = tenantWebsites.map((w) => w.id);
 
-      if (websiteIds.length === 0) {
-        return Response.json({ data: [] });
-      }
-
-      // Filter articles by website IDs belonging to the tenant
-      rows = db.select().from(articles).all().filter((a) =>
-        websiteIds.includes(a.websiteId)
-      );
-    } else {
-      rows = db.select().from(articles).all();
+    if (websiteIds.length === 0) {
+      return Response.json({ data: [] });
     }
+
+    // Filter articles by website IDs belonging to the tenant
+    const rows = db.select().from(articles).all().filter((a) =>
+      websiteIds.includes(a.websiteId)
+    );
 
     const data = rows.map((a) => ({
       ...a,
@@ -36,6 +31,7 @@ export async function GET(request: Request) {
     }));
     return Response.json({ data });
   } catch (error) {
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to fetch articles" }, { status: 500 });
   }
 }

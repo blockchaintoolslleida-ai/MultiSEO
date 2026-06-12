@@ -21,10 +21,10 @@ export default function ArticlesPage() {
   const { tenant } = useTenant();
   const [wizardOpen, setWizardOpen] = useState(false);
   const { data: articles, loading: aLoading, refetch: refetchArticles } = useApi<ArticleData[]>(
-    tenant ? `/api/articles?tenantId=${tenant.id}` : ""
+    tenant ? `/api/articles` : ""
   );
   const { data: stats, loading: sLoading, refetch: refetchStats } = useApi<ArticleStats>(
-    tenant ? `/api/articles/stats?tenantId=${tenant.id}` : ""
+    tenant ? `/api/articles/stats` : ""
   );
   const loading = aLoading || sLoading || !tenant;
 

@@ -1,30 +1,25 @@
 import { db } from "@/db";
 import { reports, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId");
+    const tenantId = getTenantId(request);
 
-    let rows;
-    if (tenantId) {
-      const tenantWebsites = db.select({ id: websites.id })
-        .from(websites)
-        .where(eq(websites.tenantId, tenantId))
-        .all();
-      const websiteIds = tenantWebsites.map((w) => w.id);
+    const tenantWebsites = db.select({ id: websites.id })
+      .from(websites)
+      .where(eq(websites.tenantId, tenantId))
+      .all();
+    const websiteIds = tenantWebsites.map((w) => w.id);
 
-      if (websiteIds.length === 0) {
-        return Response.json({ data: [] });
-      }
-
-      rows = db.select().from(reports).all().filter((r) =>
-        websiteIds.includes(r.websiteId)
-      );
-    } else {
-      rows = db.select().from(reports).all();
+    if (websiteIds.length === 0) {
+      return Response.json({ data: [] });
     }
+
+    const rows = db.select().from(reports).all().filter((r) =>
+      websiteIds.includes(r.websiteId)
+    );
 
     // Build a map of websiteId → domain for websiteUrl
     const allWebsites = db.select().from(websites).all();
@@ -38,6 +33,7 @@ export async function GET(request: Request) {
     }));
     return Response.json({ data });
   } catch (error) {
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to fetch reports" }, { status: 500 });
   }
 }

@@ -1,8 +1,11 @@
 import { db } from "@/db";
 import { geoResults, geoQueries } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const websiteId = searchParams.get("websiteId");
@@ -13,6 +16,8 @@ export async function GET(request: Request) {
         { status: 400 }
       );
     }
+
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     // Get all results for this website, newest first
     const allResults = db
@@ -105,6 +110,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     return Response.json({ error: "Failed to fetch GEO results" }, { status: 500 });
   }
 }

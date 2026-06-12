@@ -7,7 +7,6 @@
  * IMPORTANT: No Node.js imports, no atob/btoa — must work in Edge Runtime.
  */
 
-const SESSION_SECRET = process.env.SESSION_SECRET || "multiseo-dev-secret-change-in-production";
 export const SESSION_COOKIE = "multiseo_session";
 const MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
@@ -76,8 +75,25 @@ function fromBase64url(str: string): Uint8Array {
 
 // ---- Session management (Web Crypto — Edge + Node.js) ----
 
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || secret.length < 16) {
+    throw new Error(
+      "FATAL: SESSION_SECRET environment variable is not set or is too short (min 16 chars). " +
+      "Generate a strong random secret and set it before starting the server."
+    );
+  }
+  if (secret === "multiseo-dev-secret-change-in-production") {
+    throw new Error(
+      "FATAL: SESSION_SECRET is set to the default placeholder value. " +
+      "Generate a unique, random secret for your environment."
+    );
+  }
+  return secret;
+}
+
 async function getKey(): Promise<CryptoKey> {
-  const enc = new TextEncoder().encode(SESSION_SECRET);
+  const enc = new TextEncoder().encode(getSessionSecret());
   return crypto.subtle.importKey(
     "raw", enc as unknown as ArrayBuffer,
     { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]

@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(
   _request: Request,
@@ -26,10 +27,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const existing = db.select().from(websites).where(eq(websites.id, id)).get();
-    if (!existing) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    const tenantId = getTenantId(request);
+    verifyWebsiteOwnership(id, tenantId);
 
     const body = await request.json();
     const updateData: Record<string, unknown> = {};
@@ -55,23 +54,23 @@ export async function PATCH(
       data: { ...updated, accessTypes: JSON.parse(updated!.accessTypes) },
     });
   } catch (error) {
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to update website" }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const existing = db.select().from(websites).where(eq(websites.id, id)).get();
-    if (!existing) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    const tenantId = getTenantId(request);
+    verifyWebsiteOwnership(id, tenantId);
     db.delete(websites).where(eq(websites.id, id)).run();
     return Response.json({ data: { deleted: true } });
   } catch (error) {
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to delete website" }, { status: 500 });
   }
 }

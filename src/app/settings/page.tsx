@@ -87,7 +87,7 @@ export default function SettingsPage() {
     await fetch("/api/gsc/disconnect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenantId: tenant.id }),
+      body: JSON.stringify({}),
     });
     setData((prev) =>
       prev ? { ...prev, gscConnected: false, gscSiteUrl: "" } : prev

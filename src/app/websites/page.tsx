@@ -9,10 +9,10 @@ import { WebsiteGrid } from "@/components/websites/website-grid";
 export default function WebsitesPage() {
   const { tenant } = useTenant();
   const { data: websites, loading: wLoading } = useApi<WebsiteData[]>(
-    tenant ? `/api/websites?tenantId=${tenant.id}` : ""
+    tenant ? `/api/websites` : ""
   );
   const { data: stats, loading: sLoading } = useApi<WebsiteStats>(
-    tenant ? `/api/websites/stats?tenantId=${tenant.id}` : ""
+    tenant ? `/api/websites/stats` : ""
   );
   const loading = wLoading || sLoading || !tenant;
 

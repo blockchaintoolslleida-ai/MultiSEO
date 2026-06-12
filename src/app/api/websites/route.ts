@@ -1,18 +1,20 @@
 import { db } from "@/db";
 import { websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
+import { parseBody, validationErrorResponse } from "@/lib/validate";
+import { z, ZodError } from "zod";
+
+const websiteCreateSchema = z.object({
+  domain: z.string().min(1, "Domain is required"),
+  status: z.enum(["connected", "no-access", "error"]).default("connected"),
+  accessTypes: z.array(z.string()).default([]),
+});
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId");
-
-    let rows;
-    if (tenantId) {
-      rows = db.select().from(websites).where(eq(websites.tenantId, tenantId)).all();
-    } else {
-      rows = db.select().from(websites).all();
-    }
+    const tenantId = getTenantId(request);
+    const rows = db.select().from(websites).where(eq(websites.tenantId, tenantId)).all();
 
     const data = rows.map((w) => ({
       ...w,
@@ -20,34 +22,32 @@ export async function GET(request: Request) {
     }));
     return Response.json({ data });
   } catch (error) {
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to fetch websites" }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const tenantId = getTenantId(request);
+    const body = await parseBody(request, websiteCreateSchema);
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    if (!body.tenantId) {
-      return Response.json({ error: "tenantId is required" }, { status: 400 });
-    }
-
     db.insert(websites).values({
       id,
-      tenantId: body.tenantId,
+      tenantId,
       domain: body.domain,
-      status: body.status ?? "connected",
-      accessTypes: JSON.stringify(body.accessTypes ?? []),
-      keywordsCount: body.keywordsCount ?? 0,
-      articlesCount: body.articlesCount ?? 0,
-      avgPosition: body.avgPosition ?? 0,
-      estimatedTraffic: body.estimatedTraffic ?? 0,
-      backlinksCount: body.backlinksCount ?? 0,
-      healthScore: body.healthScore ?? 0,
-      lastAudit: body.lastAudit ?? "",
-      errorMessage: body.errorMessage ?? null,
+      status: body.status,
+      accessTypes: JSON.stringify(body.accessTypes),
+      keywordsCount: 0,
+      articlesCount: 0,
+      avgPosition: 0,
+      estimatedTraffic: 0,
+      backlinksCount: 0,
+      healthScore: 0,
+      lastAudit: "",
+      errorMessage: null,
       createdAt: now,
     });
 
@@ -60,6 +60,8 @@ export async function POST(request: Request) {
       data: { ...newWebsite, accessTypes: JSON.parse(newWebsite.accessTypes) },
     }, { status: 201 });
   } catch (error) {
+    if (error instanceof ZodError) return validationErrorResponse(error);
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to create website" }, { status: 500 });
   }
 }

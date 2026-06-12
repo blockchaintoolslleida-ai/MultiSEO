@@ -1,6 +1,9 @@
 import { getTelegramUpdates } from "@/lib/telegram";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const botToken = searchParams.get("botToken");

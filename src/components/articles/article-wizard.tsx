@@ -55,7 +55,7 @@ export function ArticleWizard({ open, onClose, tenantId, onCreated }: ArticleWiz
   } | null>(null);
 
   const { data: websites } = useApi<WebsiteData[]>(
-    tenantId ? `/api/websites?tenantId=${tenantId}` : ""
+    tenantId ? `/api/websites` : ""
   );
 
   const toggleStructure = (v: string) => {
@@ -72,7 +72,6 @@ export function ArticleWizard({ open, onClose, tenantId, onCreated }: ArticleWiz
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tenantId,
           websiteId,
           topic,
           keywords: keywords.split(",").map((k) => k.trim()).filter(Boolean),
@@ -99,7 +98,6 @@ export function ArticleWizard({ open, onClose, tenantId, onCreated }: ArticleWiz
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tenantId,
           websiteId,
           topic,
           keywords: keywords.split(",").map((k) => k.trim()).filter(Boolean),

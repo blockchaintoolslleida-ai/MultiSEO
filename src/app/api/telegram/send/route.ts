@@ -1,6 +1,9 @@
 import { sendTelegramMessage, formatSEOAlert } from "@/lib/telegram";
+import { getTenantId } from "@/lib/tenant";
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const { botToken, chatId, message, alerts } = body;

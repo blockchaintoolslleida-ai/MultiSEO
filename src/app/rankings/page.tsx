@@ -75,7 +75,7 @@ export default function RankingsPage() {
   // Fetch websites list
   useEffect(() => {
     if (!tenant) return;
-    fetch(`/api/websites?tenantId=${tenant.id}`)
+    fetch(`/api/websites`)
       .then((r) => r.json())
       .then((json) => {
         if (json.data) {

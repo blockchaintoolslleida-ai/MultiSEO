@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, FORBIDDEN_ERROR } from "@/lib/tenant";
 
 export async function PATCH(
   request: Request,
@@ -8,6 +9,12 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const userTenantId = getTenantId(request);
+
+    if (id !== userTenantId) {
+      throw FORBIDDEN_ERROR;
+    }
+
     const existing = db.select().from(tenants).where(eq(tenants.id, id)).get();
     if (!existing) {
       return Response.json({ error: "Tenant not found" }, { status: 404 });
@@ -27,6 +34,7 @@ export async function PATCH(
     const updated = db.select().from(tenants).where(eq(tenants.id, id)).get();
     return Response.json({ data: updated });
   } catch (error) {
+    if (error instanceof Response) throw error;
     return Response.json({ error: "Failed to update tenant" }, { status: 500 });
   }
 }

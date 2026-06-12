@@ -1,25 +1,20 @@
 import { db } from "@/db";
 import { articles, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId");
+    const tenantId = getTenantId(request);
 
-    let websiteIds: string[] = [];
-    if (tenantId) {
-      websiteIds = db.select({ id: websites.id })
-        .from(websites)
-        .where(eq(websites.tenantId, tenantId))
-        .all()
-        .map((w) => w.id);
-    }
+    const websiteIds = db.select({ id: websites.id })
+      .from(websites)
+      .where(eq(websites.tenantId, tenantId))
+      .all()
+      .map((w) => w.id);
 
     const all = db.select().from(articles).all();
-    const filtered = tenantId
-      ? all.filter((a) => websiteIds.includes(a.websiteId))
-      : all;
+    const filtered = all.filter((a) => websiteIds.includes(a.websiteId));
 
     const stats = {
       total: filtered.length,
@@ -30,6 +25,7 @@ export async function GET(request: Request) {
     };
     return Response.json({ data: stats });
   } catch (error) {
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to fetch article stats" }, { status: 500 });
   }
 }

@@ -9,7 +9,7 @@ import type { NotificationData } from "@/types/seo";
 export function AppHeader() {
   const { tenant } = useTenant();
   const { data: notifications } = useApi<NotificationData[]>(
-    tenant ? `/api/notifications?tenantId=${tenant.id}` : ""
+    tenant ? `/api/notifications` : ""
   );
   const unread = notifications?.filter((n) => !n.read).length ?? 0;
 

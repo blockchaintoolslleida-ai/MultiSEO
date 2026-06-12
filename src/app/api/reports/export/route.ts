@@ -2,8 +2,11 @@ import { db } from "@/db";
 import { keywords } from "@/db/schema";
 import { generateReportPDF, buildReportHTML } from "@/lib/pdf-export";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const {
@@ -17,6 +20,8 @@ export async function POST(request: Request) {
     if (!websiteId) {
       return Response.json({ error: "websiteId is required" }, { status: 400 });
     }
+
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     // Get website keywords for the report
     const kwList = db.select().from(keywords).where(eq(keywords.websiteId, websiteId)).all();
@@ -62,6 +67,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "PDF export failed";
     return Response.json({ error: message }, { status: 500 });
   }

@@ -1,17 +1,22 @@
 import { db } from "@/db";
 import { keywords } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const tenantId = getTenantId(request);
+
   try {
     const { id } = await params;
     const existing = db.select().from(keywords).where(eq(keywords.id, id)).get();
     if (!existing) {
       return Response.json({ error: "Keyword not found" }, { status: 404 });
     }
+
+    verifyWebsiteOwnership(existing.websiteId, tenantId);
 
     const body = await request.json();
     const updateData: Record<string, unknown> = {};
@@ -47,21 +52,26 @@ export async function PATCH(
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to update keyword";
     return Response.json({ error: msg }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const tenantId = getTenantId(request);
+
   try {
     const { id } = await params;
     const existing = db.select().from(keywords).where(eq(keywords.id, id)).get();
     if (!existing) {
       return Response.json({ error: "Keyword not found" }, { status: 404 });
     }
+
+    verifyWebsiteOwnership(existing.websiteId, tenantId);
 
     db.delete(keywords).where(eq(keywords.id, id)).run();
 
@@ -78,6 +88,7 @@ export async function DELETE(
 
     return Response.json({ data: { deleted: true } });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to delete keyword";
     return Response.json({ error: msg }, { status: 500 });
   }

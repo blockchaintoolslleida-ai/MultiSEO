@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { websites, tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
@@ -11,10 +12,8 @@ export async function GET(request: Request) {
       return Response.json({ error: "websiteId is required" }, { status: 400 });
     }
 
-    const website = db.select().from(websites).where(eq(websites.id, websiteId)).get();
-    if (!website) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    const tenantId = getTenantId(request);
+    const website = verifyWebsiteOwnership(websiteId, tenantId);
 
     const tenant = db.select().from(tenants).where(eq(tenants.id, website.tenantId)).get();
 
@@ -42,6 +41,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to fetch sync status";
     return Response.json({ error: msg }, { status: 500 });
   }

@@ -1,18 +1,12 @@
 import { db } from "@/db";
 import { notifications } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId");
-
-    let rows;
-    if (tenantId) {
-      rows = db.select().from(notifications).where(eq(notifications.tenantId, tenantId)).all();
-    } else {
-      rows = db.select().from(notifications).all();
-    }
+    const tenantId = getTenantId(request);
+    const rows = db.select().from(notifications).where(eq(notifications.tenantId, tenantId)).all();
 
     const data = rows.map((n) => ({
       ...n,
@@ -20,6 +14,7 @@ export async function GET(request: Request) {
     }));
     return Response.json({ data });
   } catch (error) {
+    if (error instanceof Response) return error;
     return Response.json({ error: "Failed to fetch notifications" }, { status: 500 });
   }
 }

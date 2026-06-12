@@ -1,8 +1,11 @@
 import { db } from "@/db";
 import { competitors, keywords, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const websiteId = searchParams.get("websiteId");
@@ -14,6 +17,8 @@ export async function GET(request: Request) {
         { status: 400 }
       );
     }
+
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     const competitor = db
       .select()
@@ -84,6 +89,7 @@ export async function GET(request: Request) {
 
     return Response.json({ data: results });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to fetch overlap";
     return Response.json({ error: msg }, { status: 500 });
   }

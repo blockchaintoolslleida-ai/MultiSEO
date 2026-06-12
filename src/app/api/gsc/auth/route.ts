@@ -1,4 +1,5 @@
 import { getOAuthUrl } from "@/lib/google-search-console";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
@@ -10,8 +11,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId") ?? "";
+    const tenantId = getTenantId(request);
 
     const baseUrl = getOAuthUrl();
     const url = new URL(baseUrl);
@@ -19,6 +19,7 @@ export async function GET(request: Request) {
 
     return Response.json({ data: { authUrl: url.toString() } });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "Failed to generate auth URL";
     return Response.json({ error: message }, { status: 500 });
   }

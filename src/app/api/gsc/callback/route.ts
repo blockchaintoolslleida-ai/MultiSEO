@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { exchangeCodeForTokens, listSites } from "@/lib/google-search-console";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
@@ -15,6 +16,26 @@ export async function GET(request: Request) {
 
     if (!state) {
       return Response.json({ error: "Missing state (tenantId)" }, { status: 400 });
+    }
+
+    // Verify tenantId from state matches the session tenant.
+    // OAuth callbacks may come from a different browser, so fall back
+    // to the state value if the header is missing or mismatched.
+    let tenantId: string;
+    try {
+      const headerTenantId = getTenantId(request);
+      if (headerTenantId === state) {
+        tenantId = headerTenantId;
+      } else {
+        console.warn(
+          `[callback] x-tenant-id (${headerTenantId}) does not match state (${state}), using state value`
+        );
+        tenantId = state;
+      }
+    } catch {
+      // No x-tenant-id header (cross-browser OAuth flow) — use state
+      console.warn(`[callback] No x-tenant-id header, using state value (${state})`);
+      tenantId = state;
     }
 
     // Exchange code for tokens
@@ -37,7 +58,7 @@ export async function GET(request: Request) {
         gscSiteUrl: siteUrl,
         gscConnected: 1,
       })
-      .where(eq(tenants.id, state))
+      .where(eq(tenants.id, tenantId))
       .run();
 
     // Return a success page that closes itself
@@ -55,6 +76,7 @@ h1{font-size:24px;margin-bottom:8px}p{color:#4ade80;font-size:14px}
       { headers: { "Content-Type": "text/html; charset=utf-8" } }
     );
   } catch (error) {
+    if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "OAuth callback failed";
     return new Response(
       `<!DOCTYPE html>

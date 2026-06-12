@@ -1,9 +1,12 @@
 import { db } from "@/db";
-import { geoQueries, geoResults, websites, tenants } from "@/db/schema";
+import { geoQueries, geoResults, tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getGEOProviders } from "@/lib/geo/providers/factory";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const { websiteId } = body;
@@ -12,20 +15,12 @@ export async function POST(request: Request) {
       return Response.json({ error: "websiteId is required" }, { status: 400 });
     }
 
-    // Get website + tenant
-    const website = db
-      .select()
-      .from(websites)
-      .where(eq(websites.id, websiteId))
-      .get();
-    if (!website) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    const website = verifyWebsiteOwnership(websiteId, tenantId);
 
     const tenant = db
       .select()
       .from(tenants)
-      .where(eq(tenants.id, website.tenantId))
+      .where(eq(tenants.id, tenantId))
       .get();
     if (!tenant) {
       return Response.json({ error: "Tenant not found" }, { status: 404 });
@@ -131,6 +126,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Scan failed";
     return Response.json({ error: msg }, { status: 500 });
   }

@@ -1,6 +1,9 @@
 import { runLighthouseAudit } from "@/lib/lighthouse";
+import { getTenantId } from "@/lib/tenant";
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const { url } = body;

@@ -1,15 +1,11 @@
 import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { tenantId } = body;
-
-    if (!tenantId) {
-      return Response.json({ error: "tenantId is required" }, { status: 400 });
-    }
+    const tenantId = getTenantId(request);
 
     const tenant = db.select().from(tenants).where(eq(tenants.id, tenantId)).get();
     if (!tenant) {
@@ -28,6 +24,7 @@ export async function POST(request: Request) {
 
     return Response.json({ data: { disconnected: true } });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Disconnect failed";
     return Response.json({ error: msg }, { status: 500 });
   }

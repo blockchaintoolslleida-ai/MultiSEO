@@ -72,7 +72,7 @@ export default function GeoPage() {
 
   useEffect(() => {
     if (!tenant) return;
-    fetch(`/api/websites?tenantId=${tenant.id}`)
+    fetch(`/api/websites`)
       .then((r) => r.json())
       .then((json) => {
         if (json.data) {

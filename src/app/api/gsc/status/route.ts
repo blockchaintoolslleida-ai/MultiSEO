@@ -1,15 +1,11 @@
 import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId");
-
-    if (!tenantId) {
-      return Response.json({ error: "tenantId is required" }, { status: 400 });
-    }
+    const tenantId = getTenantId(request);
 
     const tenant = db.select().from(tenants).where(eq(tenants.id, tenantId)).get();
     if (!tenant) {
@@ -24,6 +20,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "Failed to check GSC status";
     return Response.json({ error: message }, { status: 500 });
   }

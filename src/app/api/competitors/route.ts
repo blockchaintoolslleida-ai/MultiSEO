@@ -2,8 +2,11 @@ import { db } from "@/db";
 import { competitors, keywords, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import type { CompetitorFull, CompetitorKPIs, OverlapMatrixRow, CompetitorRecommendation } from "@/types/seo";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const websiteId = searchParams.get("websiteId");
@@ -12,10 +15,7 @@ export async function GET(request: Request) {
       return Response.json({ error: "websiteId is required" }, { status: 400 });
     }
 
-    const website = db.select().from(websites).where(eq(websites.id, websiteId)).get();
-    if (!website) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    const website = verifyWebsiteOwnership(websiteId, tenantId);
 
     const compRows = db
       .select()
@@ -179,12 +179,15 @@ export async function GET(request: Request) {
       data: { kpis, competitors: compsFull, overlapMatrix, recommendations: topRecommendations },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to fetch competitors";
     return Response.json({ error: msg }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const { websiteId, domain, avgPosition } = body;
@@ -195,6 +198,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     const existing = db
       .select()
@@ -248,6 +253,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to create competitor";
     return Response.json({ error: msg }, { status: 500 });
   }

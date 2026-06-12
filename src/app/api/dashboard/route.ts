@@ -1,9 +1,12 @@
 import { db } from "@/db";
-import { websites, keywords, competitors, rankingHistory } from "@/db/schema";
+import { keywords, competitors, rankingHistory } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import type { SEODashboardData } from "@/types/seo";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const websiteId = searchParams.get("websiteId");
@@ -12,10 +15,7 @@ export async function GET(request: Request) {
       return Response.json({ error: "websiteId query parameter is required" }, { status: 400 });
     }
 
-    const website = db.select().from(websites).where(eq(websites.id, websiteId)).get();
-    if (!website) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    const website = verifyWebsiteOwnership(websiteId, tenantId);
 
     const kwRows = db.select().from(keywords).where(eq(keywords.websiteId, websiteId)).all();
     const compRows = db.select().from(competitors).where(eq(competitors.websiteId, websiteId)).all();
@@ -89,6 +89,7 @@ export async function GET(request: Request) {
 
     return Response.json({ data });
   } catch (error) {
+    if (error instanceof Response) throw error;
     return Response.json({ error: "Failed to fetch dashboard data" }, { status: 500 });
   }
 }

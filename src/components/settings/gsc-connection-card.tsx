@@ -23,7 +23,7 @@ export function GSCConnectionCard({
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`/api/gsc/auth?tenantId=${tenantId}`);
+      const res = await fetch(`/api/gsc/auth`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
 
@@ -53,7 +53,7 @@ export function GSCConnectionCard({
       const res = await fetch("/api/gsc/disconnect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId }),
+        body: JSON.stringify({}),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);

@@ -4,6 +4,7 @@ import { PerplexityGEOProvider } from "@/lib/geo/providers/perplexity";
 import { GoogleAIGEOProvider } from "@/lib/geo/providers/google";
 import { CopilotGEOProvider } from "@/lib/geo/providers/copilot";
 import type { GEOProvider } from "@/lib/geo/types";
+import { getTenantId } from "@/lib/tenant";
 
 function getProvider(provider: string, apiKey: string): GEOProvider {
   switch (provider) {
@@ -23,6 +24,8 @@ function getProvider(provider: string, apiKey: string): GEOProvider {
 }
 
 export async function POST(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const body = await request.json();
     const { provider, apiKey } = body;

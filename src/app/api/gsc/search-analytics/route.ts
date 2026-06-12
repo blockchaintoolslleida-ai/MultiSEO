@@ -2,18 +2,22 @@ import { db } from "@/db";
 import { tenants, websites, keywords, rankingHistory } from "@/db/schema";
 import { refreshAccessToken, getSearchAnalytics } from "@/lib/google-search-console";
 import { eq, and } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { tenantId, websiteId } = body;
+    const { websiteId } = body;
 
-    if (!tenantId || !websiteId) {
+    if (!websiteId) {
       return Response.json(
-        { error: "tenantId and websiteId are required" },
+        { error: "websiteId is required" },
         { status: 400 }
       );
     }
+
+    const tenantId = getTenantId(request);
+    const website = verifyWebsiteOwnership(websiteId, tenantId);
 
     // Get tenant with GSC tokens
     const tenant = db.select().from(tenants).where(eq(tenants.id, tenantId)).get();
@@ -26,11 +30,6 @@ export async function POST(request: Request) {
         { error: "Google Search Console not connected. Go to Configuración → Conectar GSC." },
         { status: 400 }
       );
-    }
-
-    const website = db.select().from(websites).where(eq(websites.id, websiteId)).get();
-    if (!website) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
     }
 
     // Refresh access token
@@ -185,6 +184,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "GSC sync failed";
     return Response.json({ error: message }, { status: 500 });
   }

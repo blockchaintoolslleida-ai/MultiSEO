@@ -1,8 +1,11 @@
 import { db } from "@/db";
 import { keywords, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const websiteId = searchParams.get("websiteId");
@@ -16,6 +19,8 @@ export async function GET(request: Request) {
     if (!websiteId) {
       return Response.json({ error: "websiteId is required" }, { status: 400 });
     }
+
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     // Fetch all keywords for this website
     const all = db
@@ -84,6 +89,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "Failed to fetch keywords";
     return Response.json({ error: message }, { status: 500 });
   }

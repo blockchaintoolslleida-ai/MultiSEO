@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { tenants } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, FORBIDDEN_ERROR } from "@/lib/tenant";
 
 function maskKey(key: string): string {
   if (!key || key.length <= 8) return "***";
@@ -8,11 +9,17 @@ function maskKey(key: string): string {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const userTenantId = getTenantId(request);
+
+    if (id !== userTenantId) {
+      throw FORBIDDEN_ERROR;
+    }
+
     const tenant = db.select().from(tenants).where(eq(tenants.id, id)).get();
     if (!tenant) {
       return Response.json({ error: "Tenant not found" }, { status: 404 });
@@ -46,6 +53,7 @@ export async function GET(
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to fetch settings";
     return Response.json({ error: msg }, { status: 500 });
   }
@@ -57,6 +65,12 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const userTenantId = getTenantId(request);
+
+    if (id !== userTenantId) {
+      throw FORBIDDEN_ERROR;
+    }
+
     const existing = db.select().from(tenants).where(eq(tenants.id, id)).get();
     if (!existing) {
       return Response.json({ error: "Tenant not found" }, { status: 404 });
@@ -110,6 +124,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     const msg = error instanceof Error ? error.message : "Failed to update settings";
     return Response.json({ error: msg }, { status: 500 });
   }

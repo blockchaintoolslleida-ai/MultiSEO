@@ -25,10 +25,10 @@ export default function ReportsPage() {
   const [websiteId, setWebsiteId] = useState("1");
   const [websitesList, setWebsitesList] = useState<WebsiteOption[]>([]);
   const { data: reports, loading: rLoading } = useApi<ReportData[]>(
-    tenant ? `/api/reports?tenantId=${tenant.id}` : ""
+    tenant ? `/api/reports` : ""
   );
   const { data: stats, loading: sLoading } = useApi<ReportStats>(
-    tenant ? `/api/reports/stats?tenantId=${tenant.id}` : ""
+    tenant ? `/api/reports/stats` : ""
   );
   const [exporting, setExporting] = useState(false);
 
@@ -37,7 +37,7 @@ export default function ReportsPage() {
   // Fetch websites list for the selector
   useEffect(() => {
     if (!tenant) return;
-    fetch(`/api/websites?tenantId=${tenant.id}`)
+    fetch(`/api/websites`)
       .then((r) => r.json())
       .then((json) => {
         if (json.data) {

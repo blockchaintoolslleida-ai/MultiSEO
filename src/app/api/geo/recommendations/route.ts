@@ -1,8 +1,11 @@
 import { db } from "@/db";
-import { geoResults, geoQueries, websites } from "@/db/schema";
+import { geoResults, geoQueries } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
 export async function GET(request: Request) {
+  const tenantId = getTenantId(request);
+
   try {
     const { searchParams } = new URL(request.url);
     const websiteId = searchParams.get("websiteId");
@@ -14,14 +17,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const website = db
-      .select()
-      .from(websites)
-      .where(eq(websites.id, websiteId))
-      .get();
-    if (!website) {
-      return Response.json({ error: "Website not found" }, { status: 404 });
-    }
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     const allResults = db
       .select()
@@ -108,6 +104,7 @@ export async function GET(request: Request) {
 
     return Response.json({ data: recommendations });
   } catch (error) {
+    if (error instanceof Response) throw error;
     return Response.json({ error: "Failed to generate recommendations" }, { status: 500 });
   }
 }

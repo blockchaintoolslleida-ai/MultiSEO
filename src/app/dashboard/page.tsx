@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const checkGSCStatus = useCallback(async () => {
     if (!tenant) return;
     try {
-      const res = await fetch(`/api/gsc/status?tenantId=${tenant.id}`);
+      const res = await fetch(`/api/gsc/status`);
       const json = await res.json();
       if (res.ok) setGscStatus(json.data);
     } catch {
@@ -65,7 +65,7 @@ export default function DashboardPage() {
   // Fetch websites list for the selector
   useEffect(() => {
     if (!tenant) return;
-    fetch(`/api/websites?tenantId=${tenant.id}`)
+    fetch(`/api/websites`)
       .then((r) => r.json())
       .then((json) => {
         if (json.data) {
@@ -79,7 +79,7 @@ export default function DashboardPage() {
 
   const handleConnectGSC = async () => {
     try {
-      const res = await fetch(`/api/gsc/auth?tenantId=${tenant?.id ?? ""}`);
+      const res = await fetch(`/api/gsc/auth`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       // Open OAuth URL in popup
@@ -110,7 +110,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/gsc/search-analytics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId: tenant.id, websiteId }),
+        body: JSON.stringify({ websiteId }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "GSC sync failed");
