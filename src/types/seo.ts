@@ -81,6 +81,7 @@ export interface KeywordData {
   history: number[];
   isTop3?: boolean;
   isFalling?: boolean;
+  websiteDomain?: string;
 }
 
 export interface SEODashboardData {

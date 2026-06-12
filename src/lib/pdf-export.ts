@@ -47,8 +47,26 @@ export function buildReportHTML(data: {
   kpis: { label: string; value: string }[];
   keywords: { keyword: string; position: number; change: number; volume: number }[];
   logoUrl?: string;
+  websites?: { domain: string; kpis: { label: string; value: string }[] }[];
 }): string {
   const color = data.brandColor || "#4f46e5";
+
+  const websitesHtml = data.websites?.length
+    ? `
+  <div class="section">
+    <h2>Desglose por Sitio Web</h2>
+    ${data.websites
+      .map(
+        (w) => `
+    <h3 style="font-size:16px;color:#374151;margin-bottom:10px;margin-top:16px;">${escapeHtml(w.domain)}</h3>
+    <div class="kpi-grid">
+      ${w.kpis.map((k) => `<div class="kpi-card"><div class="value">${escapeHtml(k.value)}</div><div class="label">${escapeHtml(k.label)}</div></div>`).join("")}
+    </div>
+    `
+      )
+      .join("")}
+  </div>`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -84,18 +102,22 @@ export function buildReportHTML(data: {
     <div class="kpi-grid">
       ${data.kpis.map((k) => `<div class="kpi-card"><div class="value">${escapeHtml(k.value)}</div><div class="label">${escapeHtml(k.label)}</div></div>`).join("")}
     </div>
-  </div>
+  </div>${websitesHtml}
   <div class="section">
     <h2>Ranking de Keywords</h2>
     <table>
       <thead><tr><th>Keyword</th><th>Posición</th><th>Cambio</th><th>Volumen</th></tr></thead>
       <tbody>
-        ${data.keywords.map((k) => `<tr>
+        ${data.keywords
+          .map(
+            (k) => `<tr>
           <td>${escapeHtml(k.keyword)}</td>
           <td>${k.position}</td>
           <td class="${k.change > 0 ? "pos-down" : "pos-up"}">${k.change > 0 ? "+" + k.change : k.change}</td>
           <td>${k.volume.toLocaleString("es-ES")}</td>
-        </tr>`).join("")}
+        </tr>`
+          )
+          .join("")}
       </tbody>
     </table>
   </div>

@@ -195,17 +195,21 @@ export default function DashboardPage() {
           </svg>
           {tenant?.name ?? "Demo Company"}
         </span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-        <span>{data.websiteUrl}</span>
+        {websiteId !== "all" && (
+          <>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span>{data.websiteUrl}</span>
+          </>
+        )}
         <svg
           width="12"
           height="12"

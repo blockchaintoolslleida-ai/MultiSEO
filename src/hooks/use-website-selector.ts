@@ -33,9 +33,13 @@ export function useWebsiteSelector(): UseWebsiteSelectorResult {
       .then((json) => {
         if (cancelled) return;
         if (json.data) {
-          const list: WebsiteOption[] = json.data.map(
-            (w: WebsiteOption) => ({ id: w.id, domain: w.domain })
-          );
+          const realList: WebsiteOption[] = json.data.map((w: WebsiteOption) => ({
+            id: w.id,
+            domain: w.domain,
+          }));
+          // Prepend "all websites" option when there are 2+ real websites
+          const allOption: WebsiteOption = { id: "all", domain: "🌐 Todos los websites" };
+          const list = realList.length > 1 ? [allOption, ...realList] : realList;
           setWebsitesList(list);
           if (list.length > 0) setWebsiteId(list[0].id);
         }
@@ -48,7 +52,9 @@ export function useWebsiteSelector(): UseWebsiteSelectorResult {
       .finally(() => {
         if (!cancelled) setFetched(true);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [tenant]);
 
   const loading = !fetched;

@@ -2,23 +2,28 @@
 
 import { Bell, ChevronDown } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
-import { useApi } from "@/hooks/use-api";
-import { useTenant } from "@/hooks/use-tenant";
-import type { NotificationData } from "@/types/seo";
+import { useNotifications } from "./notification-provider";
 
 export function AppHeader() {
-  const { tenant } = useTenant();
-  const { data: notifications } = useApi<NotificationData[]>(
-    tenant ? `/api/notifications` : ""
-  );
-  const unread = notifications?.filter((n) => !n.read).length ?? 0;
+  const { unreadCount: unread } = useNotifications();
 
   return (
     <header className="flex items-center justify-between h-[60px] px-6 bg-white border-b border-gray-200">
       <div className="flex items-center gap-2.5 font-bold text-[17px] text-gray-900">
         <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-brand-500 to-brand-400 flex items-center justify-center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
           </svg>
         </div>
         {APP_NAME}
