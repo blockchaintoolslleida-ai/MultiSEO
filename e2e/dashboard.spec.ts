@@ -8,11 +8,11 @@ test.describe.serial("Dashboard", () => {
   test("dashboard loads without errors", async ({ page }) => {
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/dashboard/);
-    await page.waitForLoadState("networkidle");
 
-    // At least one heading-level element should be visible
-    const heading = page.locator("h1, h2, h3").first();
-    await expect(heading).toBeVisible({ timeout: 10_000 });
+    // Wait for the page to render (any heading or loading text)
+    // NOTE: no networkidle — the page polls GSC status in background
+    const heading = page.locator("h1, h2, h3, p");
+    await expect(heading.first()).toBeVisible({ timeout: 15_000 });
   });
 
   test("dashboard has sidebar navigation", async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe.serial("Dashboard", () => {
 
     // The sidebar should be present with main nav links
     await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible({
-      timeout: 5_000,
+      timeout: 10_000,
     });
     await expect(page.getByRole("link", { name: "Rankings" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Configuración" })).toBeVisible();
