@@ -58,10 +58,19 @@ export async function apiFetch<T = unknown>(
     ...rest,
   });
 
-  const json = await res.json();
+  // Read body as text first so we never crash on empty/invalid JSON
+  const text = await res.text();
+  let json: Record<string, unknown>;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    json = {};
+  }
 
   if (!res.ok) {
-    throw new Error(json.error || `Request failed with status ${res.status}`);
+    const errMsg =
+      typeof json.error === "string" ? json.error : `Request failed with status ${res.status}`;
+    throw new Error(errMsg);
   }
 
   return json as T;

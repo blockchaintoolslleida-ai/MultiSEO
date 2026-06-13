@@ -5,6 +5,7 @@ import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
 import { useWebsiteSelector } from "@/hooks/use-website-selector";
 import type { SEODashboardData } from "@/types/seo";
+import { apiFetch } from "@/lib/api-client";
 import { GSC_POPUP_SIZE, GSC_POPUP_POLL_MS } from "@/lib/constants";
 import { KPIGrid } from "@/components/seo/kpi-grid";
 import { RankingChart } from "@/components/seo/ranking-chart";
@@ -100,13 +101,9 @@ export default function DashboardPage() {
     setGscError(null);
     setGscResult(null);
     try {
-      const res = await fetch("/api/gsc/search-analytics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ websiteId }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "GSC sync failed");
+      const json = await apiFetch<{
+        data: { keywordsImported: number; keywordsUpdated: number; totalImpressions: number };
+      }>("/api/gsc/search-analytics", { method: "POST", body: { websiteId } });
       const d = json.data;
       setGscResult(
         `${d.keywordsImported} nuevas, ${d.keywordsUpdated} actualizadas · ${d.totalImpressions.toLocaleString()} impresiones`
@@ -125,13 +122,10 @@ export default function DashboardPage() {
     setScrapeError(null);
     setScrapeResult(null);
     try {
-      const res = await fetch("/api/keywords/scrape", {
+      const json = await apiFetch<{ data: { keywordsScraped: number } }>("/api/keywords/scrape", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ websiteId }),
+        body: { websiteId },
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Scraping failed");
       setScrapeResult(`${json.data.keywordsScraped} keywords actualizadas`);
       refetch();
     } catch (err) {
@@ -147,13 +141,16 @@ export default function DashboardPage() {
     setAuditResult(null);
     try {
       const domain = data?.websiteUrl ?? "example.com";
-      const res = await fetch("/api/lighthouse/audit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: `https://${domain}` }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Audit failed");
+      const json = await apiFetch<{
+        data: {
+          scores: {
+            performance: number;
+            accessibility: number;
+            bestPractices: number;
+            seo: number;
+          };
+        };
+      }>("/api/lighthouse/audit", { method: "POST", body: { url: `https://${domain}` } });
       const s = json.data.scores;
       setAuditResult(
         `Health ${Math.round((s.performance + s.accessibility + s.bestPractices + s.seo) / 4)}% · Perf ${s.performance} · SEO ${s.seo}`

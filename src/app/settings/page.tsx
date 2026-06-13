@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTenant } from "@/hooks/use-tenant";
+import { apiFetch } from "@/lib/api-client";
 import { ProviderKeysManager } from "@/components/settings/provider-keys-manager";
 import { GSCConnectionCard } from "@/components/settings/gsc-connection-card";
 import { TelegramSettings } from "@/components/settings/telegram-settings";
@@ -39,89 +40,66 @@ export default function SettingsPage() {
   }, [tenant]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data-fetching on mount
     fetchSettings();
   }, [fetchSettings]);
 
   const handleSaveProvider = async (provider: string, apiKey: string, enabled: boolean) => {
     if (!tenant) return;
-    const currentKeys = data?.geoProviderKeys ?? {};
     const currentEnabled = data?.geoEnabledProviders ?? [];
 
-    // Build updated keys while preserving other providers' keys
-    const updatedKeys: Record<string, string> = {};
-    for (const [k, v] of Object.entries(currentKeys)) {
-      // Unmask: we need the real key from the DB. The PATCH endpoint handles merging.
-    }
     // Since keys are masked in GET, we send only the changed key
+    const updatedKeys: Record<string, string> = {};
     updatedKeys[provider] = apiKey;
 
     const updatedEnabled = enabled
       ? [...new Set([...currentEnabled, provider])]
       : currentEnabled.filter((p) => p !== provider);
 
-    const res = await fetch(`/api/tenants/${tenant.id}/settings`, {
+    const json = await apiFetch<{ data: SettingsData }>(`/api/tenants/${tenant.id}/settings`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      body: {
         geoProviderKeys: updatedKeys,
         geoEnabledProviders: updatedEnabled,
-      }),
+      },
     });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error);
     setData(json.data);
   };
 
   const handleTestProvider = async (provider: string, apiKey: string) => {
-    const res = await fetch("/api/geo/test", {
+    const json = await apiFetch<{ data: { ok: boolean; error?: string } }>("/api/geo/test", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provider, apiKey }),
+      body: { provider, apiKey },
     });
-    const json = await res.json();
     return json.data ?? { ok: false, error: "Error desconocido" };
   };
 
   const handleDisconnectGSC = async () => {
     if (!tenant) return;
-    await fetch("/api/gsc/disconnect", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    });
-    setData((prev) =>
-      prev ? { ...prev, gscConnected: false, gscSiteUrl: "" } : prev
-    );
+    await apiFetch("/api/gsc/disconnect", { method: "POST", body: {} });
+    setData((prev) => (prev ? { ...prev, gscConnected: false, gscSiteUrl: "" } : prev));
   };
 
   const handleSaveTelegram = async (botToken: string, chatId: string) => {
     if (!tenant) return;
-    const res = await fetch(`/api/tenants/${tenant.id}/settings`, {
+    const json = await apiFetch<{ data: SettingsData }>(`/api/tenants/${tenant.id}/settings`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegramBotToken: botToken, telegramChatId: chatId }),
+      body: { telegramBotToken: botToken, telegramChatId: chatId },
     });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error);
     setData(json.data);
   };
 
   const handleTestTelegram = async (botToken: string, chatId: string) => {
-    const res = await fetch("/api/telegram/test", {
+    const json = await apiFetch<{ data: { ok: boolean; error?: string } }>("/api/telegram/test", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ botToken, chatId }),
+      body: { botToken, chatId },
     });
-    const json = await res.json();
     return json.data ?? { ok: false, error: "Error desconocido" };
   };
 
   if (loading || !tenant) {
     return (
-      <div
-        className="flex items-center justify-center"
-        style={{ minHeight: "60vh" }}
-      >
+      <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-gray-400">Cargando configuración...</p>
@@ -170,9 +148,7 @@ export default function SettingsPage() {
       </div>
 
       {error && (
-        <div className="mb-5 text-[13px] text-red-600 bg-red-50 rounded-xl px-4 py-3">
-          {error}
-        </div>
+        <div className="mb-5 text-[13px] text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</div>
       )}
 
       <div className="space-y-8">
@@ -191,7 +167,6 @@ export default function SettingsPage() {
         <GSCConnectionCard
           connected={data?.gscConnected ?? false}
           siteUrl={data?.gscSiteUrl ?? ""}
-          tenantId={tenant.id}
           onDisconnect={handleDisconnectGSC}
         />
 

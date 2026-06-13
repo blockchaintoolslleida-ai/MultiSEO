@@ -2,20 +2,15 @@
 
 import { useState } from "react";
 import { CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
+import { apiFetch } from "@/lib/api-client";
 
 interface GSCConnectionCardProps {
   connected: boolean;
   siteUrl: string;
-  tenantId: string;
   onDisconnect: () => void;
 }
 
-export function GSCConnectionCard({
-  connected,
-  siteUrl,
-  tenantId,
-  onDisconnect,
-}: GSCConnectionCardProps) {
+export function GSCConnectionCard({ connected, siteUrl, onDisconnect }: GSCConnectionCardProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,17 +41,16 @@ export function GSCConnectionCard({
   };
 
   const handleDisconnect = async () => {
-    if (!confirm("¿Desconectar Google Search Console? Necesitarás volver a autorizar para reconectar.")) return;
+    if (
+      !confirm(
+        "¿Desconectar Google Search Console? Necesitarás volver a autorizar para reconectar."
+      )
+    )
+      return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/gsc/disconnect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
+      await apiFetch("/api/gsc/disconnect", { method: "POST", body: {} });
       onDisconnect();
       setLoading(false);
     } catch (err) {
@@ -85,7 +79,9 @@ export function GSCConnectionCard({
               <XCircle className="w-5 h-5 text-gray-400" />
             )}
             <div>
-              <div className={`text-[13px] font-semibold ${connected ? "text-green-700" : "text-gray-700"}`}>
+              <div
+                className={`text-[13px] font-semibold ${connected ? "text-green-700" : "text-gray-700"}`}
+              >
                 {connected ? "Conectado" : "No conectado"}
               </div>
               {connected && siteUrl && (
@@ -137,8 +133,8 @@ export function GSCConnectionCard({
         {connected && (
           <div className="mt-3 pt-3 border-t border-green-100">
             <p className="text-[11px] text-gray-400">
-              Los datos se sincronizan bajo demanda desde el Dashboard o la página de Rankings. La conexión
-              OAuth 2.0 permite acceso de solo lectura a Search Console.
+              Los datos se sincronizan bajo demanda desde el Dashboard o la página de Rankings. La
+              conexión OAuth 2.0 permite acceso de solo lectura a Search Console.
             </p>
           </div>
         )}

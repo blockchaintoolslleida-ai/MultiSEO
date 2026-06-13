@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback, useMemo } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
 import { useWebsiteSelector } from "@/hooks/use-website-selector";
@@ -32,16 +33,34 @@ export default function CompetitorsPage() {
   );
 
   const kpis = data?.kpis;
-  const competitors = data?.competitors ?? [];
-  const matrix = data?.overlapMatrix ?? [];
+  const competitors = useMemo(() => data?.competitors ?? [], [data?.competitors]);
+  const matrix = useMemo(() => data?.overlapMatrix ?? [], [data?.overlapMatrix]);
   const recommendations = data?.recommendations ?? [];
+
+  // Highlighted competitor for "Ver competidor" actions
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  const handleRecommendationAction = useCallback(
+    (rec: CompetitorRecommendation) => {
+      // Find the competitor by domain from relatedCompetitor or relatedKeyword
+      const target =
+        competitors.find((c) => c.domain === rec.relatedCompetitor) ??
+        competitors.find((c) => c.keywordsOverlap.includes(rec.relatedKeyword ?? ""));
+
+      if (target) {
+        setHighlightedId(target.id);
+        // Scroll to the ranking section
+        document
+          .getElementById("ranking-section")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    },
+    [competitors]
+  );
 
   if (loading || !tenant) {
     return (
-      <div
-        className="flex items-center justify-center"
-        style={{ minHeight: "60vh" }}
-      >
+      <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-gray-400">Cargando Competidores...</p>
@@ -108,12 +127,15 @@ export default function CompetitorsPage() {
       {kpis && <CompetitorKPIGrid kpis={kpis} />}
 
       {/* Ranking - full width */}
-      <CompetitorRanking
-        competitors={competitors}
-        onSelect={() => {
-          document.getElementById("comparator-section")?.scrollIntoView({ behavior: "smooth" });
-        }}
-      />
+      <div id="ranking-section">
+        <CompetitorRanking
+          competitors={competitors}
+          highlightedId={highlightedId}
+          onSelect={() => {
+            document.getElementById("comparator-section")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      </div>
 
       {/* Overlap Matrix + Comparator grid */}
       <div className="grid grid-cols-[1fr_1fr] gap-4 mb-5" id="comparator-section">
@@ -126,18 +148,18 @@ export default function CompetitorsPage() {
           matrix={matrix}
           yourDomain={competitors.find((c) => c.rank === 1)?.domain ?? "tuweb.com"}
           yourPosition={kpis?.yourAvgPosition ?? 0}
+          preSelectedId={highlightedId}
         />
       </div>
 
       {/* Intelligence */}
-      <CompetitorIntelligence recommendations={recommendations} />
+      <CompetitorIntelligence
+        recommendations={recommendations}
+        onAction={handleRecommendationAction}
+      />
 
       {/* Manager (collapsible) */}
-      <CompetitorManager
-        competitors={competitors}
-        websiteId={websiteId}
-        onRefresh={refetch}
-      />
+      <CompetitorManager competitors={competitors} websiteId={websiteId} onRefresh={refetch} />
     </div>
   );
 }

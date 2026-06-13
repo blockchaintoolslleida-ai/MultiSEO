@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { CompetitorFull } from "@/types/seo";
-import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertTriangle,
+} from "lucide-react";
 
 interface CompetitorRankingProps {
   competitors: CompetitorFull[];
   onSelect?: (id: string) => void;
+  highlightedId?: string | null;
 }
 
 const BAR_COLORS = [
@@ -20,8 +28,23 @@ const BAR_COLORS = [
   "bg-gradient-to-r from-teal-500 to-teal-400",
 ];
 
-export function CompetitorRanking({ competitors, onSelect }: CompetitorRankingProps) {
+export function CompetitorRanking({
+  competitors,
+  onSelect,
+  highlightedId,
+}: CompetitorRankingProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Sync local expanded state when parent signals a highlight (e.g. "Ver competidor").
+  // This is a legitimate external-signal sync — not a cascading render risk because
+  // highlightedId only changes on explicit user action, not as a result of our setState.
+  useEffect(() => {
+    if (highlightedId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- external signal sync
+      setExpandedId(highlightedId);
+      onSelect?.(highlightedId);
+    }
+  }, [highlightedId]);
 
   const TrendIcon = ({ trend }: { trend: string }) => {
     if (trend === "up") return <TrendingUp className="w-3.5 h-3.5 text-green-500" />;
@@ -40,6 +63,7 @@ export function CompetitorRanking({ competitors, onSelect }: CompetitorRankingPr
         {competitors.map((c, i) => {
           const isExpanded = expandedId === c.id;
           const isYou = c.rank === 1;
+          const isHighlighted = highlightedId === c.id;
 
           return (
             <div key={c.id}>
@@ -48,8 +72,12 @@ export function CompetitorRanking({ competitors, onSelect }: CompetitorRankingPr
                   setExpandedId(isExpanded ? null : c.id);
                   onSelect?.(c.id);
                 }}
-                className={`w-full flex items-center gap-2.5 py-2.5 px-2 rounded-lg text-left transition-colors ${
-                  isYou ? "bg-brand-50" : "hover:bg-gray-50"
+                className={`w-full flex items-center gap-2.5 py-2.5 px-2 rounded-lg text-left transition-all ${
+                  isYou
+                    ? "bg-brand-50"
+                    : isHighlighted
+                      ? "bg-blue-50 ring-1 ring-blue-200 shadow-[0_0_8px_rgba(59,130,246,0.15)]"
+                      : "hover:bg-gray-50"
                 }`}
               >
                 <span
@@ -78,15 +106,11 @@ export function CompetitorRanking({ competitors, onSelect }: CompetitorRankingPr
                     style={{ width: `${Math.min(Math.max((c.avgPosition / 15) * 100, 8), 100)}%` }}
                   />
                 </div>
-                <strong
-                  className={`text-[15px] w-9 text-right ${isYou ? "text-brand-600" : ""}`}
-                >
+                <strong className={`text-[15px] w-9 text-right ${isYou ? "text-brand-600" : ""}`}>
                   {c.avgPosition}
                 </strong>
                 <TrendIcon trend={c.trend} />
-                {c.highlightChange && (
-                  <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
-                )}
+                {c.highlightChange && <AlertTriangle className="w-3.5 h-3.5 text-red-500" />}
                 <span className="w-4 text-gray-400">
                   {isExpanded ? (
                     <ChevronUp className="w-4 h-4" />
@@ -108,9 +132,7 @@ export function CompetitorRanking({ competitors, onSelect }: CompetitorRankingPr
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Actualizado:</span>{" "}
-                    {c.lastUpdated
-                      ? new Date(c.lastUpdated).toLocaleDateString("es-ES")
-                      : "—"}
+                    {c.lastUpdated ? new Date(c.lastUpdated).toLocaleDateString("es-ES") : "—"}
                   </div>
                 </div>
               )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CompetitorFull } from "@/types/seo";
+import { apiFetch } from "@/lib/api-client";
 import { Pencil, Trash2, Plus, X, Check } from "lucide-react";
 
 interface CompetitorManagerProps {
@@ -10,11 +11,7 @@ interface CompetitorManagerProps {
   onRefresh: () => void;
 }
 
-export function CompetitorManager({
-  competitors,
-  websiteId,
-  onRefresh,
-}: CompetitorManagerProps) {
+export function CompetitorManager({ competitors, websiteId, onRefresh }: CompetitorManagerProps) {
   const [collapsed, setCollapsed] = useState(true);
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -33,17 +30,14 @@ export function CompetitorManager({
       return;
     }
     try {
-      const res = await fetch("/api/competitors", {
+      await apiFetch("/api/competitors", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           websiteId,
           domain: newDomain.trim(),
           avgPosition: parseFloat(newPosition) || 0,
-        }),
+        },
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
       setNewDomain("");
       setNewPosition("");
       setAdding(false);
@@ -56,17 +50,14 @@ export function CompetitorManager({
   const handleUpdate = async (id: string) => {
     setError(null);
     try {
-      const res = await fetch(`/api/competitors/${id}`, {
+      await apiFetch(`/api/competitors/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           domain: editDomain.trim(),
           avgPosition: parseFloat(editPosition) || 0,
           trend: editTrend,
-        }),
+        },
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
       setEditingId(null);
       onRefresh();
     } catch (err) {
@@ -78,9 +69,7 @@ export function CompetitorManager({
     setError(null);
     if (!confirm(`¿Eliminar a "${domain}" como competidor?`)) return;
     try {
-      const res = await fetch(`/api/competitors/${id}`, { method: "DELETE" });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
+      await apiFetch(`/api/competitors/${id}`, { method: "DELETE" });
       onRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al eliminar");
@@ -168,9 +157,7 @@ export function CompetitorManager({
                       <td className="text-center py-2">
                         <span
                           className={`text-[10px] px-1.5 py-0 rounded-full ${
-                            c.isManual
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-gray-100 text-gray-600"
+                            c.isManual ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
                           }`}
                         >
                           {c.isManual ? "manual" : "GSC"}

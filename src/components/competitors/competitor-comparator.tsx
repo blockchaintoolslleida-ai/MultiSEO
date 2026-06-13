@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { CompetitorFull, OverlapMatrixRow } from "@/types/seo";
 import { SELECTION_MAX_COMPETITORS, DOMAIN_TRUNCATE_LENGTH } from "@/lib/constants";
 
@@ -9,6 +9,7 @@ interface CompetitorComparatorProps {
   matrix: OverlapMatrixRow[];
   yourDomain: string;
   yourPosition: number;
+  preSelectedId?: string | null;
 }
 
 export function CompetitorComparator({
@@ -16,8 +17,24 @@ export function CompetitorComparator({
   matrix,
   yourDomain,
   yourPosition,
+  preSelectedId,
 }: CompetitorComparatorProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Auto-select when parent signals a competitor to view (e.g. "Ver competidor").
+  // Legitimate external-signal sync — preSelectedId only changes on explicit user action.
+  useEffect(() => {
+    if (
+      preSelectedId &&
+      !selectedIds.has(preSelectedId) &&
+      selectedIds.size < SELECTION_MAX_COMPETITORS
+    ) {
+      const next = new Set(selectedIds);
+      next.add(preSelectedId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- external signal sync
+      setSelectedIds(next);
+    }
+  }, [preSelectedId]);
 
   const toggleSelect = (id: string) => {
     const next = new Set(selectedIds);
@@ -30,7 +47,13 @@ export function CompetitorComparator({
   };
 
   const selected = competitors.filter((c) => selectedIds.has(c.id));
-  const columns: { domain: string; avgPosition: number; isYou: boolean; id?: string; trafficEstimate?: number }[] = [
+  const columns: {
+    domain: string;
+    avgPosition: number;
+    isYou: boolean;
+    id?: string;
+    trafficEstimate?: number;
+  }[] = [
     { domain: yourDomain, avgPosition: yourPosition, isYou: true },
     ...selected.map((c) => ({
       domain: c.domain,
@@ -43,9 +66,7 @@ export function CompetitorComparator({
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
-      <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
-        ⚖️ Comparador
-      </h3>
+      <h3 className="text-[15px] font-semibold text-gray-900 mb-1">⚖️ Comparador</h3>
       <p className="text-[12px] text-gray-400 mb-3">
         Selecciona hasta 3 competidores para comparar
       </p>
@@ -69,18 +90,21 @@ export function CompetitorComparator({
       </div>
 
       {selected.length > 0 && (
-        <div className={`grid gap-3`} style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}>
+        <div
+          className={`grid gap-3`}
+          style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}
+        >
           {columns.map((col) => (
             <div
               key={col.domain}
               className={`rounded-lg p-3 border ${
-                col.isYou
-                  ? "border-brand-300 bg-brand-50"
-                  : "border-gray-200 bg-gray-50"
+                col.isYou ? "border-brand-300 bg-brand-50" : "border-gray-200 bg-gray-50"
               }`}
             >
               <div className="text-[13px] font-semibold text-gray-800 mb-1 flex items-center gap-1">
-                {col.domain.length > DOMAIN_TRUNCATE_LENGTH ? col.domain.slice(0, DOMAIN_TRUNCATE_LENGTH) + "…" : col.domain}
+                {col.domain.length > DOMAIN_TRUNCATE_LENGTH
+                  ? col.domain.slice(0, DOMAIN_TRUNCATE_LENGTH) + "…"
+                  : col.domain}
                 {col.isYou && (
                   <span className="text-[10px] bg-brand-200 text-brand-700 rounded-full px-1">
                     tú
@@ -99,11 +123,7 @@ export function CompetitorComparator({
                 <span className="font-medium">Top keywords:</span>
                 <ul className="mt-1 space-y-0.5">
                   {matrix
-                    .filter((row) =>
-                      row.competitors.some(
-                        (c) => c.domain === col.domain
-                      )
-                    )
+                    .filter((row) => row.competitors.some((c) => c.domain === col.domain))
                     .slice(0, 5)
                     .map((row) => (
                       <li key={row.keywordId} className="text-gray-600 flex justify-between">
@@ -113,11 +133,8 @@ export function CompetitorComparator({
                         </span>
                       </li>
                     ))}
-                  {matrix.filter((row) =>
-                    row.competitors.some((c) => c.domain === col.domain)
-                  ).length === 0 && (
-                    <li className="text-gray-400">Sin datos de solapamiento</li>
-                  )}
+                  {matrix.filter((row) => row.competitors.some((c) => c.domain === col.domain))
+                    .length === 0 && <li className="text-gray-400">Sin datos de solapamiento</li>}
                 </ul>
               </div>
             </div>
