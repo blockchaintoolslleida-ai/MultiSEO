@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
 import { apiFetch } from "@/lib/api-client";
 
 interface GSCConnectionCardProps {
@@ -23,6 +23,36 @@ export function GSCConnectionCard({
   const [error, setError] = useState<string | null>(null);
   const [editingSiteUrl, setEditingSiteUrl] = useState(siteUrl);
   const [savingSiteUrl, setSavingSiteUrl] = useState(false);
+  const [availableSites, setAvailableSites] = useState<string[]>([]);
+  const [loadingSites, setLoadingSites] = useState(false);
+
+  // Use siteUrl from parent as initial value; user edits are tracked locally.
+  // When availableSites are loaded, auto-select the first one if no siteUrl is set.
+  const displayUrl = editingSiteUrl || siteUrl;
+
+  const handleListSites = async () => {
+    setLoadingSites(true);
+    setError(null);
+    try {
+      const json = await apiFetch<{ data: { sites: string[] } }>("/api/gsc/sites");
+      const sites = json.data?.sites ?? [];
+      setAvailableSites(sites);
+      if (sites.length === 0) {
+        setError(
+          "No se encontraron sitios verificados en GSC. Verifica tu sitio en Google Search Console."
+        );
+      } else if (!siteUrl) {
+        // Auto-select first site
+        const first = sites[0];
+        setEditingSiteUrl(first);
+        await onSaveSiteUrl(first);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al listar sitios");
+    } finally {
+      setLoadingSites(false);
+    }
+  };
 
   const handleConnect = async () => {
     setError(null);
@@ -136,38 +166,76 @@ export function GSCConnectionCard({
 
         {connected && (
           <div className="mt-3 pt-3 border-t border-green-100 space-y-3">
-            {/* Site URL editor */}
+            {/* Site URL section */}
             <div>
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                URL del sitio en GSC
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={editingSiteUrl}
-                  onChange={(e) => setEditingSiteUrl(e.target.value)}
-                  placeholder="sc_domain:example.com o https://example.com/"
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-[12px] focus:outline-none focus:border-brand-400"
-                />
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-medium text-gray-500">
+                  URL del sitio en GSC
+                </label>
                 <button
-                  onClick={async () => {
-                    setSavingSiteUrl(true);
-                    try {
-                      await onSaveSiteUrl(editingSiteUrl.trim());
-                    } catch {
-                      // error handled by parent
-                    } finally {
+                  onClick={handleListSites}
+                  disabled={loadingSites}
+                  className="text-[10px] text-brand-600 hover:text-brand-700 flex items-center gap-1 disabled:opacity-50"
+                >
+                  {loadingSites ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3 h-3" />
+                  )}
+                  Buscar sitios
+                </button>
+              </div>
+
+              {availableSites.length > 0 ? (
+                <select
+                  value={displayUrl}
+                  onChange={async (e) => {
+                    const val = e.target.value;
+                    setEditingSiteUrl(val);
+                    if (val) {
+                      setSavingSiteUrl(true);
+                      try {
+                        await onSaveSiteUrl(val);
+                      } catch {}
                       setSavingSiteUrl(false);
                     }
                   }}
-                  disabled={savingSiteUrl}
-                  className="text-[11px] px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-[12px] bg-white focus:outline-none focus:border-brand-400 mb-2"
                 >
-                  {savingSiteUrl ? "..." : "Guardar URL"}
-                </button>
-              </div>
-              <p className="text-[10px] text-gray-400 mt-1">
-                Formato: sc_domain:dominio.com o https://www.dominio.com/
+                  {availableSites.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={displayUrl}
+                    onChange={(e) => setEditingSiteUrl(e.target.value)}
+                    placeholder="sc_domain:example.com o https://example.com/"
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-[12px] focus:outline-none focus:border-brand-400"
+                  />
+                  <button
+                    onClick={async () => {
+                      setSavingSiteUrl(true);
+                      try {
+                        await onSaveSiteUrl(displayUrl.trim());
+                      } catch {}
+                      setSavingSiteUrl(false);
+                    }}
+                    disabled={savingSiteUrl}
+                    className="text-[11px] px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {savingSiteUrl ? "..." : "Guardar"}
+                  </button>
+                </div>
+              )}
+              <p className="text-[10px] text-gray-400">
+                {availableSites.length > 0
+                  ? `${availableSites.length} sitio(s) disponible(s). Selecciona uno y sincroniza desde el Dashboard.`
+                  : 'Usa "Buscar sitios" para detectar tus propiedades verificadas.'}
               </p>
             </div>
             <p className="text-[11px] text-gray-400">

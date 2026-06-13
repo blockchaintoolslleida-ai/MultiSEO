@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { tenants, websites, keywords, rankingHistory } from "@/db/schema";
 import { refreshAccessToken, getSearchAnalytics } from "@/lib/google-search-console";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 import { getTenantSecret, setTenantSecret } from "@/lib/tenant-secrets";
 
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     const tenantId = getTenantId(request);
-    const website = verifyWebsiteOwnership(websiteId, tenantId);
+    verifyWebsiteOwnership(websiteId, tenantId);
 
     // Get tenant with GSC tokens
     const tenant = db.select().from(tenants).where(eq(tenants.id, tenantId)).get();
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           error:
-            "No se ha configurado un sitio de GSC. Ve a Configuración y reconecta Google Search Console para detectar tus sitios verificados.",
+            "No hay URL de sitio GSC configurada. Ve a Configuración → GSC → Buscar sitios para detectar tus propiedades verificadas.",
         },
         { status: 400 }
       );
@@ -199,6 +199,16 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof Response) throw error;
     const message = error instanceof Error ? error.message : "GSC sync failed";
+    // Improve INVALID_ARGUMENT message
+    if (message.includes("INVALID_ARGUMENT")) {
+      return Response.json(
+        {
+          error:
+            "El sitio GSC configurado no es válido para tu cuenta. Ve a Configuración → GSC → Buscar sitios para detectar tus propiedades verificadas y seleccionar la correcta.",
+        },
+        { status: 400 }
+      );
+    }
     return Response.json({ error: message }, { status: 500 });
   }
 }
