@@ -3,13 +3,9 @@ import { competitors } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const tenantId = getTenantId(request);
-
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const tenantId = getTenantId(request);
     const { id } = await params;
     const existing = db.select().from(competitors).where(eq(competitors.id, id)).get();
     if (!existing) {
@@ -51,13 +47,9 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const tenantId = getTenantId(request);
-
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const tenantId = getTenantId(request);
     const { id } = await params;
     const existing = db.select().from(competitors).where(eq(competitors.id, id)).get();
     if (!existing) {
@@ -71,10 +63,15 @@ export async function DELETE(
       try {
         const overlap = JSON.parse(existing.keywordsOverlap);
         hasOverlap = overlap.length > 0;
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       if (hasOverlap) {
         return Response.json(
-          { error: "No se puede eliminar un competidor detectado automáticamente con datos de solapamiento." },
+          {
+            error:
+              "No se puede eliminar un competidor detectado automáticamente con datos de solapamiento.",
+          },
           { status: 400 }
         );
       }

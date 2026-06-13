@@ -7,10 +7,10 @@ function execLighthouse(command: string): Promise<string> {
       {
         timeout: 120000,
         maxBuffer: 10 * 1024 * 1024, // 10MB
-        shell: "cmd.exe",
+        shell: process.platform === "win32" ? "cmd.exe" : "/bin/sh",
       },
-      (error, stdout) => {
-        // Lighthouse on Windows may exit non-zero due to temp cleanup EPERM,
+      (error: Error | null, stdout: string) => {
+        // Lighthouse may exit non-zero due to temp cleanup EPERM,
         // but stdout may still contain valid JSON from the audit.
         if (stdout) {
           resolve(stdout);
@@ -45,12 +45,12 @@ export async function runLighthouseAudit(url: string): Promise<LighthouseAuditRe
     targetUrl,
     "--output=json",
     "--only-categories=performance,accessibility,best-practices,seo",
-    "--chrome-flags=--headless --no-sandbox --disable-gpu",
+    '--chrome-flags="--headless --no-sandbox --disable-gpu"',
     "--quiet",
   ];
 
   try {
-    const stdout = await execLighthouse(`npx.cmd lighthouse ${args.join(" ")}`);
+    const stdout = await execLighthouse(`npx lighthouse ${args.join(" ")}`);
 
     // Extract JSON from stdout (may contain warnings before/after the JSON)
     const jsonMatch = stdout.match(/\{[\s\S]*"categories"[\s\S]*\}/);
@@ -114,7 +114,13 @@ export async function runLighthouseAudit(url: string): Promise<LighthouseAuditRe
       if (recommendations.length >= 5) break;
     }
 
-    return { scores, url: targetUrl, timestamp: new Date().toISOString(), summary, recommendations };
+    return {
+      scores,
+      url: targetUrl,
+      timestamp: new Date().toISOString(),
+      summary,
+      recommendations,
+    };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Lighthouse audit failed: ${msg}`);
