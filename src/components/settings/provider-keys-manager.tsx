@@ -10,9 +10,17 @@ interface ProviderInfo {
 }
 
 const PROVIDER_INFO: Record<string, ProviderInfo> = {
-  deepseek: { name: "DeepSeek", icon: "🧠", description: "Modelo chino. Principal para GEO tracking." },
+  deepseek: {
+    name: "DeepSeek",
+    icon: "🧠",
+    description: "Modelo chino. Principal para GEO tracking.",
+  },
   chatgpt: { name: "ChatGPT", icon: "🤖", description: "OpenAI GPT-4o. Cobertura global." },
-  perplexity: { name: "Perplexity", icon: "🔍", description: "Motor de búsqueda IA. Visibilidad en search." },
+  perplexity: {
+    name: "Perplexity",
+    icon: "🔍",
+    description: "Motor de búsqueda IA. Visibilidad en search.",
+  },
   google: { name: "Google AI", icon: "🇬", description: "Google AI Overviews / SGE." },
   copilot: { name: "Copilot", icon: "💬", description: "Microsoft Copilot / Bing Chat." },
 };
@@ -27,10 +35,13 @@ interface ProviderKeysManagerProps {
 export function ProviderKeysManager({ keys, enabled, onSave, onTest }: ProviderKeysManagerProps) {
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
   const [testing, setTesting] = useState<Set<string>>(new Set());
-  const [testResults, setTestResults] = useState<Record<string, { ok: boolean; error?: string }>>({});
+  const [testResults, setTestResults] = useState<Record<string, { ok: boolean; error?: string }>>(
+    {}
+  );
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [localKeys, setLocalKeys] = useState<Record<string, string>>({});
   const [localEnabled, setLocalEnabled] = useState<Set<string>>(new Set(enabled));
+  const [saveError, setSaveError] = useState<Record<string, string>>({});
 
   const toggleVisibility = (provider: string) => {
     const next = new Set(visibleKeys);
@@ -41,21 +52,66 @@ export function ProviderKeysManager({ keys, enabled, onSave, onTest }: ProviderK
 
   const toggleEnabled = async (provider: string) => {
     const next = new Set(localEnabled);
-    if (next.has(provider)) next.delete(provider);
-    else next.add(provider);
+    const enabling = !next.has(provider);
+    if (enabling) next.add(provider);
+    else next.delete(provider);
     setLocalEnabled(next);
 
     const currentKey = localKeys[provider] ?? keys[provider] ?? "";
     setSaving((s) => new Set(s).add(provider));
-    await onSave(provider, currentKey, !localEnabled.has(provider));
-    setSaving((s) => { const n = new Set(s); n.delete(provider); return n; });
+    setSaveError((e) => {
+      const n = { ...e };
+      delete n[provider];
+      return n;
+    });
+    try {
+      await onSave(provider, currentKey, enabling);
+      setLocalKeys((k) => {
+        const n = { ...k };
+        delete n[provider];
+        return n;
+      });
+    } catch (err) {
+      setSaveError((e) => ({
+        ...e,
+        [provider]: err instanceof Error ? err.message : "Error al guardar",
+      }));
+    } finally {
+      setSaving((s) => {
+        const n = new Set(s);
+        n.delete(provider);
+        return n;
+      });
+    }
   };
 
   const handleSave = async (provider: string) => {
     const key = localKeys[provider] ?? keys[provider] ?? "";
     setSaving((s) => new Set(s).add(provider));
-    await onSave(provider, key, localEnabled.has(provider));
-    setSaving((s) => { const n = new Set(s); n.delete(provider); return n; });
+    setSaveError((e) => {
+      const n = { ...e };
+      delete n[provider];
+      return n;
+    });
+    try {
+      await onSave(provider, key, localEnabled.has(provider));
+      setLocalKeys((k) => {
+        const n = { ...k };
+        delete n[provider];
+        return n;
+      });
+    } catch (err) {
+      setSaveError((e) => ({
+        ...e,
+        [provider]: err instanceof Error ? err.message : "Error al guardar",
+      }));
+    } finally {
+      setSaving((s) => {
+        const n = new Set(s);
+        n.delete(provider);
+        return n;
+      });
+    }
   };
 
   const handleTest = async (provider: string) => {
@@ -67,7 +123,11 @@ export function ProviderKeysManager({ keys, enabled, onSave, onTest }: ProviderK
     setTesting((s) => new Set(s).add(provider));
     const result = await onTest(provider, key);
     setTestResults((r) => ({ ...r, [provider]: result }));
-    setTesting((s) => { const n = new Set(s); n.delete(provider); return n; });
+    setTesting((s) => {
+      const n = new Set(s);
+      n.delete(provider);
+      return n;
+    });
   };
 
   const getStatus = (provider: string) => {
@@ -124,9 +184,7 @@ export function ProviderKeysManager({ keys, enabled, onSave, onTest }: ProviderK
                   type={visibleKeys.has(id) ? "text" : "password"}
                   placeholder="sk-..."
                   value={localKeys[id] ?? keys[id] ?? ""}
-                  onChange={(e) =>
-                    setLocalKeys((k) => ({ ...k, [id]: e.target.value }))
-                  }
+                  onChange={(e) => setLocalKeys((k) => ({ ...k, [id]: e.target.value }))}
                   disabled={!isEnabled}
                   className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-[12px] pr-9 focus:outline-none focus:border-brand-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
@@ -161,6 +219,11 @@ export function ProviderKeysManager({ keys, enabled, onSave, onTest }: ProviderK
                 </button>
               </div>
 
+              {saveError[id] && (
+                <p className="text-[11px] text-red-600 bg-red-50 rounded-md px-2 py-1 mb-1">
+                  {saveError[id]}
+                </p>
+              )}
               <div className={`text-[11px] flex items-center gap-1 ${status.color}`}>
                 {testResults[id]?.ok ? (
                   <CheckCircle className="w-3 h-3" />

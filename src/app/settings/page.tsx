@@ -167,6 +167,7 @@ export default function SettingsPage() {
         <GSCConnectionCard
           connected={data?.gscConnected ?? false}
           siteUrl={data?.gscSiteUrl ?? ""}
+          onConnect={fetchSettings}
           onDisconnect={handleDisconnectGSC}
         />
 

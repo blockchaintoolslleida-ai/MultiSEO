@@ -7,10 +7,16 @@ import { apiFetch } from "@/lib/api-client";
 interface GSCConnectionCardProps {
   connected: boolean;
   siteUrl: string;
+  onConnect: () => void;
   onDisconnect: () => void;
 }
 
-export function GSCConnectionCard({ connected, siteUrl, onDisconnect }: GSCConnectionCardProps) {
+export function GSCConnectionCard({
+  connected,
+  siteUrl,
+  onConnect,
+  onDisconnect,
+}: GSCConnectionCardProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +37,7 @@ export function GSCConnectionCard({ connected, siteUrl, onDisconnect }: GSCConne
         if (popup.closed) {
           clearInterval(interval);
           setLoading(false);
-          window.location.reload();
+          onConnect();
         }
       }, 500);
     } catch (err) {
