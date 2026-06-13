@@ -23,9 +23,17 @@ export function CompetitorManager({ competitors, websiteId, onRefresh }: Competi
   const [editPosition, setEditPosition] = useState("");
   const [editTrend, setEditTrend] = useState("flat");
 
+  // Strip protocol and trailing slash from user-pasted URLs
+  const normalizeDomain = (d: string) =>
+    d
+      .trim()
+      .replace(/^https?:\/\//i, "")
+      .replace(/\/+$/, "");
+
   const handleAdd = async () => {
     setError(null);
-    if (!newDomain.trim()) {
+    const domain = normalizeDomain(newDomain);
+    if (!domain) {
       setError("El dominio es obligatorio");
       return;
     }
@@ -34,7 +42,7 @@ export function CompetitorManager({ competitors, websiteId, onRefresh }: Competi
         method: "POST",
         body: {
           websiteId,
-          domain: newDomain.trim(),
+          domain,
           avgPosition: parseFloat(newPosition) || 0,
         },
       });
@@ -53,7 +61,7 @@ export function CompetitorManager({ competitors, websiteId, onRefresh }: Competi
       await apiFetch(`/api/competitors/${id}`, {
         method: "PATCH",
         body: {
-          domain: editDomain.trim(),
+          domain: normalizeDomain(editDomain),
           avgPosition: parseFloat(editPosition) || 0,
           trend: editTrend,
         },

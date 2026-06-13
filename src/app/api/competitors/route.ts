@@ -1,7 +1,12 @@
 import { db } from "@/db";
 import { competitors, keywords, websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import type { CompetitorFull, CompetitorKPIs, OverlapMatrixRow, CompetitorRecommendation } from "@/types/seo";
+import type {
+  CompetitorFull,
+  CompetitorKPIs,
+  OverlapMatrixRow,
+  CompetitorRecommendation,
+} from "@/types/seo";
 import { ONE_WEEK_MS, POSITION_THRESHOLDS, MAX_RECOMMENDATIONS } from "@/lib/constants";
 import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
@@ -38,7 +43,7 @@ export async function GET(request: Request) {
 
       for (const comp of compRows) {
         const compWebsite = allWebsites.find(
-          (w) => w.domain === comp.domain && w.id !== websiteId
+          (w) => normalizeDomain(w.domain) === normalizeDomain(comp.domain) && w.id !== websiteId
         );
 
         if (compWebsite) {
@@ -73,10 +78,13 @@ export async function GET(request: Request) {
     }
 
     const yourAvgPosition = website.avgPosition;
-    const top3Comps = compRows.filter((c) => c.domain !== website.domain).slice(0, POSITION_THRESHOLDS.TOP3);
+    const top3Comps = compRows
+      .filter((c) => c.domain !== website.domain)
+      .slice(0, POSITION_THRESHOLDS.TOP3);
     const top3AvgPosition =
       top3Comps.length > 0
-        ? Math.round((top3Comps.reduce((s, c) => s + c.avgPosition, 0) / top3Comps.length) * 10) / 10
+        ? Math.round((top3Comps.reduce((s, c) => s + c.avgPosition, 0) / top3Comps.length) * 10) /
+          10
         : 0;
 
     const activeThreats = compRows.filter(
@@ -99,7 +107,11 @@ export async function GET(request: Request) {
       trend: c.trend as "up" | "down" | "flat",
       highlightChange: c.highlightChange === 1,
       keywordsOverlap: (() => {
-        try { return JSON.parse(c.keywordsOverlap); } catch { return []; }
+        try {
+          return JSON.parse(c.keywordsOverlap);
+        } catch {
+          return [];
+        }
       })(),
       trafficEstimate: c.trafficEstimate,
       isManual: c.isManual === 1,
@@ -186,20 +198,23 @@ export async function GET(request: Request) {
   }
 }
 
+/** Strip protocol and trailing slash so domain matching works. */
+function normalizeDomain(d: string): string {
+  return d.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+}
+
 export async function POST(request: Request) {
   const tenantId = getTenantId(request);
 
   try {
     const body = await request.json();
-    const { websiteId, domain, avgPosition } = body;
+    const { websiteId, domain: rawDomain, avgPosition } = body;
 
-    if (!websiteId || !domain) {
-      return Response.json(
-        { error: "websiteId and domain are required" },
-        { status: 400 }
-      );
+    if (!websiteId || !rawDomain) {
+      return Response.json({ error: "websiteId and domain are required" }, { status: 400 });
     }
 
+    const domain = normalizeDomain(rawDomain);
     verifyWebsiteOwnership(websiteId, tenantId);
 
     const existing = db
@@ -207,13 +222,33 @@ export async function POST(request: Request) {
       .from(competitors)
       .where(eq(competitors.websiteId, websiteId))
       .all()
-      .find((c) => c.domain === domain);
+      .find((c) => normalizeDomain(c.domain) === domain);
 
     if (existing) {
       return Response.json(
         { error: "Este competidor ya existe para este website" },
         { status: 409 }
       );
+    }
+
+    // Detect keyword overlap: if any website in the system has this domain,
+    // pull its keywords to populate the overlap matrix
+    const allWebsites = db.select().from(websites).all();
+    const matchingWebsite = allWebsites.find(
+      (w) => normalizeDomain(w.domain) === domain && w.id !== websiteId
+    );
+
+    let keywordsOverlap: string[] = [];
+    let trafficEstimate = 0;
+
+    if (matchingWebsite) {
+      const compKeywords = db
+        .select()
+        .from(keywords)
+        .where(eq(keywords.websiteId, matchingWebsite.id))
+        .all();
+      keywordsOverlap = compKeywords.map((k) => k.id);
+      trafficEstimate = compKeywords.reduce((sum, k) => sum + k.volume, 0);
     }
 
     const currentCount = db
@@ -234,8 +269,8 @@ export async function POST(request: Request) {
         avgPosition: avgPosition ?? 0,
         trend: "flat",
         highlightChange: 0,
-        keywordsOverlap: "[]",
-        trafficEstimate: 0,
+        keywordsOverlap: JSON.stringify(keywordsOverlap),
+        trafficEstimate,
         isManual: 1,
         lastUpdated: now,
       })
