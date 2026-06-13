@@ -58,25 +58,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     verifyWebsiteOwnership(existing.websiteId, tenantId);
 
-    if (existing.isManual === 0) {
-      let hasOverlap = false;
-      try {
-        const overlap = JSON.parse(existing.keywordsOverlap);
-        hasOverlap = overlap.length > 0;
-      } catch {
-        /* ignore */
-      }
-      if (hasOverlap) {
-        return Response.json(
-          {
-            error:
-              "No se puede eliminar un competidor detectado automáticamente con datos de solapamiento.",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
     db.delete(competitors).where(eq(competitors.id, id)).run();
     return Response.json({ data: { deleted: true } });
   } catch (error) {
