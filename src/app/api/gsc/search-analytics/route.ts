@@ -11,10 +11,7 @@ export async function POST(request: Request) {
     const { websiteId } = body;
 
     if (!websiteId) {
-      return Response.json(
-        { error: "websiteId is required" },
-        { status: 400 }
-      );
+      return Response.json({ error: "websiteId is required" }, { status: 400 });
     }
 
     const tenantId = getTenantId(request);
@@ -54,17 +51,22 @@ export async function POST(request: Request) {
       }
     }
 
-    // Determine site URL for GSC (from body → tenant setting → domain fallback)
-    const siteUrl =
-      body.siteUrl ||
-      tenant.gscSiteUrl ||
-      `sc_domain:${website.domain}`;
+    // Determine site URL for GSC (from body → tenant setting)
+    const siteUrl = body.siteUrl || tenant.gscSiteUrl;
+
+    if (!siteUrl) {
+      return Response.json(
+        {
+          error:
+            "No se ha configurado un sitio de GSC. Ve a Configuración y reconecta Google Search Console para detectar tus sitios verificados.",
+        },
+        { status: 400 }
+      );
+    }
 
     // Fetch search analytics (last 28 days)
     const endDate = new Date().toISOString().split("T")[0];
-    const startDate = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
+    const startDate = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
     const rows = await getSearchAnalytics(accessToken, siteUrl, startDate, endDate, 50);
 
@@ -73,7 +75,8 @@ export async function POST(request: Request) {
         data: {
           keywordsImported: 0,
           keywordsUpdated: 0,
-          message: "No search analytics data found for this site. Make sure the site is verified in Google Search Console.",
+          message:
+            "No search analytics data found for this site. Make sure the site is verified in Google Search Console.",
         },
       });
     }
@@ -93,7 +96,11 @@ export async function POST(request: Request) {
       if (existing) {
         // Update existing keyword
         const history = (() => {
-          try { return JSON.parse(existing.history); } catch { return []; }
+          try {
+            return JSON.parse(existing.history);
+          } catch {
+            return [];
+          }
         })();
         history.push(position);
         if (history.length > 30) history.shift(); // Keep last 30 data points
@@ -104,7 +111,10 @@ export async function POST(request: Request) {
             volume: row.impressions,
             difficulty: position <= 6 ? "easy" : position <= 20 ? "medium" : "hard",
             isTop3: position <= 3 ? 1 : 0,
-            isFalling: history.length >= 2 && history[history.length - 1] > history[history.length - 2] ? 1 : 0,
+            isFalling:
+              history.length >= 2 && history[history.length - 1] > history[history.length - 2]
+                ? 1
+                : 0,
             history: JSON.stringify(history),
           })
           .where(eq(keywords.id, existing.id))
@@ -137,8 +147,7 @@ export async function POST(request: Request) {
     // Update website KPIs
     const updatedKws = db.select().from(keywords).where(eq(keywords.websiteId, websiteId)).all();
     if (updatedKws.length > 0) {
-      const avgPos =
-        updatedKws.reduce((sum, k) => sum + k.position, 0) / updatedKws.length;
+      const avgPos = updatedKws.reduce((sum, k) => sum + k.position, 0) / updatedKws.length;
       const totalVolume = updatedKws.reduce((sum, k) => sum + k.volume, 0);
 
       db.update(websites)
@@ -155,7 +164,9 @@ export async function POST(request: Request) {
     // Add ranking history point
     const avgPos =
       updatedKws.length > 0
-        ? Math.round((updatedKws.reduce((sum, k) => sum + k.position, 0) / updatedKws.length) * 10) / 10
+        ? Math.round(
+            (updatedKws.reduce((sum, k) => sum + k.position, 0) / updatedKws.length) * 10
+          ) / 10
         : 0;
 
     db.insert(rankingHistory)

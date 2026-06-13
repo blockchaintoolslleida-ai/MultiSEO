@@ -41,7 +41,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       },
     });
   } catch (error) {
-    if (error instanceof Response) throw error;
+    if (error instanceof Response) return error;
     const msg = error instanceof Error ? error.message : "Failed to update competitor";
     return Response.json({ error: msg }, { status: 500 });
   }
@@ -80,7 +80,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     db.delete(competitors).where(eq(competitors.id, id)).run();
     return Response.json({ data: { deleted: true } });
   } catch (error) {
-    if (error instanceof Response) throw error;
+    if (error instanceof Response) return error;
     const msg = error instanceof Error ? error.message : "Failed to delete competitor";
     return Response.json({ error: msg }, { status: 500 });
   }

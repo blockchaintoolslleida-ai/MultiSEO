@@ -68,9 +68,7 @@ export async function exchangeCodeForTokens(
   };
 }
 
-export async function refreshAccessToken(
-  refreshToken: string
-): Promise<{ access_token: string }> {
+export async function refreshAccessToken(refreshToken: string): Promise<{ access_token: string }> {
   const body = new URLSearchParams({
     client_id: getClientId(),
     client_secret: getClientSecret(),
@@ -117,7 +115,7 @@ export async function getSearchAnalytics(
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`GSC API error ${res.status}: ${err}`);
+    throw new Error(`GSC API error ${res.status} for site "${siteUrl}": ${err}`);
   }
 
   const data: GSCSearchAnalyticsResponse = await res.json();
