@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import type { CompetitorFull } from "@/types/seo";
 import { apiFetch } from "@/lib/api-client";
-import { Pencil, Trash2, Plus, X, Check } from "lucide-react";
+import { Pencil, Trash2, Plus, X, Check, Sparkles, Loader2 } from "lucide-react";
 
 interface CompetitorManagerProps {
   competitors: CompetitorFull[];
@@ -16,6 +16,8 @@ export function CompetitorManager({ competitors, websiteId, onRefresh }: Competi
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [analyzingId, setAnalyzingId] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<Record<string, string>>({});
 
   const [newDomain, setNewDomain] = useState("");
   const [newPosition, setNewPosition] = useState("");
@@ -84,6 +86,30 @@ export function CompetitorManager({ competitors, websiteId, onRefresh }: Competi
     }
   };
 
+  const handleAnalyze = async (comp: CompetitorFull) => {
+    setError(null);
+    setAnalyzingId(comp.id);
+    try {
+      const json = await apiFetch<{
+        data: {
+          avgPosition: number;
+          trafficEstimate: number;
+          trend: string;
+          analysis: { summary: string; discoveredKeywords: string[] };
+        };
+      }>(`/api/competitors/${comp.id}/analyze`, { method: "POST" });
+      setAnalysisResult((r) => ({
+        ...r,
+        [comp.id]: `${json.data.analysis.summary} Keywords descubiertas: ${json.data.analysis.discoveredKeywords.join(", ") || "ninguna"}`,
+      }));
+      onRefresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al analizar");
+    } finally {
+      setAnalyzingId(null);
+    }
+  };
+
   const startEdit = (c: CompetitorFull) => {
     setEditingId(c.id);
     setEditDomain(c.domain);
@@ -125,86 +151,118 @@ export function CompetitorManager({ competitors, websiteId, onRefresh }: Competi
               <tbody>
                 {competitors.map((c) => {
                   const isEditing = editingId === c.id;
+                  const analysis = analysisResult[c.id];
                   return (
-                    <tr key={c.id} className="border-b border-gray-50">
-                      <td className="py-2">
-                        {isEditing ? (
-                          <input
-                            value={editDomain}
-                            onChange={(e) => setEditDomain(e.target.value)}
-                            className="border border-gray-200 rounded px-2 py-1 w-full text-[12px]"
-                          />
-                        ) : (
-                          c.domain
-                        )}
-                      </td>
-                      <td className="text-center py-2">
-                        {isEditing ? (
-                          <div className="flex items-center gap-1 justify-center">
+                    <React.Fragment key={c.id}>
+                      <tr className="border-b border-gray-50">
+                        <td className="py-2">
+                          {isEditing ? (
                             <input
-                              type="number"
-                              step="0.1"
-                              value={editPosition}
-                              onChange={(e) => setEditPosition(e.target.value)}
-                              className="border border-gray-200 rounded px-2 py-1 w-16 text-[12px]"
+                              value={editDomain}
+                              onChange={(e) => setEditDomain(e.target.value)}
+                              className="border border-gray-200 rounded px-2 py-1 w-full text-[12px]"
                             />
-                            <select
-                              value={editTrend}
-                              onChange={(e) => setEditTrend(e.target.value)}
-                              className="border border-gray-200 rounded px-1 py-1 text-[11px]"
-                            >
-                              <option value="up">↑</option>
-                              <option value="flat">→</option>
-                              <option value="down">↓</option>
-                            </select>
-                          </div>
-                        ) : (
-                          c.avgPosition
-                        )}
-                      </td>
-                      <td className="text-center py-2">
-                        <span
-                          className={`text-[10px] px-1.5 py-0 rounded-full ${
-                            c.isManual ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {c.isManual ? "manual" : "GSC"}
-                        </span>
-                      </td>
-                      <td className="text-center py-2">
-                        {isEditing ? (
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => handleUpdate(c.id)}
-                              className="p-1 hover:bg-green-50 rounded text-green-600"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="p-1 hover:bg-gray-50 rounded text-gray-400"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => startEdit(c)}
-                              className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-gray-600"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(c.id, c.domain)}
-                              className="p-1 hover:bg-red-50 rounded text-gray-400 hover:text-red-500"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
+                          ) : (
+                            <div>
+                              {c.domain}
+                              {c.isManual && c.avgPosition === 0 && !analysis && (
+                                <span className="text-[10px] text-amber-500 ml-1">
+                                  ⚡ sin analizar
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="text-center py-2">
+                          {isEditing ? (
+                            <div className="flex items-center gap-1 justify-center">
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={editPosition}
+                                onChange={(e) => setEditPosition(e.target.value)}
+                                className="border border-gray-200 rounded px-2 py-1 w-16 text-[12px]"
+                              />
+                              <select
+                                value={editTrend}
+                                onChange={(e) => setEditTrend(e.target.value)}
+                                className="border border-gray-200 rounded px-1 py-1 text-[11px]"
+                              >
+                                <option value="up">↑</option>
+                                <option value="flat">→</option>
+                                <option value="down">↓</option>
+                              </select>
+                            </div>
+                          ) : (
+                            c.avgPosition
+                          )}
+                        </td>
+                        <td className="text-center py-2">
+                          <span
+                            className={`text-[10px] px-1.5 py-0 rounded-full ${
+                              c.isManual ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {c.isManual ? "manual" : "GSC"}
+                          </span>
+                        </td>
+                        <td className="text-center py-2">
+                          {isEditing ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => handleUpdate(c.id)}
+                                className="p-1 hover:bg-green-50 rounded text-green-600"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => setEditingId(null)}
+                                className="p-1 hover:bg-gray-50 rounded text-gray-400"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => handleAnalyze(c)}
+                                disabled={analyzingId === c.id}
+                                title="Analizar con IA"
+                                className="p-1 hover:bg-purple-50 rounded text-gray-400 hover:text-purple-600 disabled:opacity-50"
+                              >
+                                {analyzingId === c.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Sparkles className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => startEdit(c)}
+                                className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-gray-600"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(c.id, c.domain)}
+                                className="p-1 hover:bg-red-50 rounded text-gray-400 hover:text-red-500"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                      {analysis && (
+                        <tr className="border-b border-gray-50">
+                          <td colSpan={4} className="py-2">
+                            <div className="text-[11px] text-purple-700 bg-purple-50 rounded-md px-3 py-1.5 flex items-start gap-1.5">
+                              <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              {analysis}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>

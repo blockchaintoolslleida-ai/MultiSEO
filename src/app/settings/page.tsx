@@ -169,6 +169,14 @@ export default function SettingsPage() {
           siteUrl={data?.gscSiteUrl ?? ""}
           onConnect={fetchSettings}
           onDisconnect={handleDisconnectGSC}
+          onSaveSiteUrl={async (newSiteUrl: string) => {
+            if (!tenant) return;
+            const json = await apiFetch<{ data: SettingsData }>(
+              `/api/tenants/${tenant.id}/settings`,
+              { method: "PATCH", body: { gscSiteUrl: newSiteUrl } }
+            );
+            setData(json.data);
+          }}
         />
 
         {/* Divider */}

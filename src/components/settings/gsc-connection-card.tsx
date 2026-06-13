@@ -9,6 +9,7 @@ interface GSCConnectionCardProps {
   siteUrl: string;
   onConnect: () => void;
   onDisconnect: () => void;
+  onSaveSiteUrl: (siteUrl: string) => Promise<void>;
 }
 
 export function GSCConnectionCard({
@@ -16,9 +17,12 @@ export function GSCConnectionCard({
   siteUrl,
   onConnect,
   onDisconnect,
+  onSaveSiteUrl,
 }: GSCConnectionCardProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingSiteUrl, setEditingSiteUrl] = useState(siteUrl);
+  const [savingSiteUrl, setSavingSiteUrl] = useState(false);
 
   const handleConnect = async () => {
     setError(null);
@@ -90,12 +94,6 @@ export function GSCConnectionCard({
               >
                 {connected ? "Conectado" : "No conectado"}
               </div>
-              {connected && siteUrl && (
-                <div className="text-[12px] text-gray-500 flex items-center gap-1 mt-0.5">
-                  <ExternalLink className="w-3 h-3" />
-                  {siteUrl}
-                </div>
-              )}
               {!connected && (
                 <div className="text-[12px] text-gray-400 mt-0.5">
                   Conecta tu cuenta de Google para sincronizar datos de Search Console
@@ -137,10 +135,44 @@ export function GSCConnectionCard({
         </div>
 
         {connected && (
-          <div className="mt-3 pt-3 border-t border-green-100">
+          <div className="mt-3 pt-3 border-t border-green-100 space-y-3">
+            {/* Site URL editor */}
+            <div>
+              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
+                URL del sitio en GSC
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={editingSiteUrl}
+                  onChange={(e) => setEditingSiteUrl(e.target.value)}
+                  placeholder="sc_domain:example.com o https://example.com/"
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-[12px] focus:outline-none focus:border-brand-400"
+                />
+                <button
+                  onClick={async () => {
+                    setSavingSiteUrl(true);
+                    try {
+                      await onSaveSiteUrl(editingSiteUrl.trim());
+                    } catch {
+                      // error handled by parent
+                    } finally {
+                      setSavingSiteUrl(false);
+                    }
+                  }}
+                  disabled={savingSiteUrl}
+                  className="text-[11px] px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap"
+                >
+                  {savingSiteUrl ? "..." : "Guardar URL"}
+                </button>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1">
+                Formato: sc_domain:dominio.com o https://www.dominio.com/
+              </p>
+            </div>
             <p className="text-[11px] text-gray-400">
-              Los datos se sincronizan bajo demanda desde el Dashboard o la página de Rankings. La
-              conexión OAuth 2.0 permite acceso de solo lectura a Search Console.
+              Los datos se sincronizan bajo demanda desde el Dashboard. La conexión OAuth 2.0
+              permite acceso de solo lectura a Search Console.
             </p>
           </div>
         )}

@@ -9,10 +9,7 @@ function maskKey(key: string): string {
   return key.slice(0, 4) + "***" + key.slice(-2);
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const userTenantId = getTenantId(request);
@@ -29,12 +26,16 @@ export async function GET(
     let geoProviderKeys: Record<string, string> = {};
     try {
       geoProviderKeys = JSON.parse(getTenantSecret(tenant, "geoProviderKeys") || "{}");
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     let geoEnabledProviders: string[] = [];
     try {
       geoEnabledProviders = JSON.parse(tenant.geoEnabledProviders || '["deepseek"]');
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     // Mask all API keys
     const maskedKeys: Record<string, string> = {};
@@ -63,10 +64,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const userTenantId = getTenantId(request);
@@ -83,14 +81,21 @@ export async function PATCH(
     const body = await request.json();
     const updateData: Record<string, unknown> = {};
 
-    if (body.deepseekApiKey !== undefined) updateData.deepseekApiKey = setTenantSecret(body.deepseekApiKey);
-    if (body.telegramBotToken !== undefined) updateData.telegramBotToken = setTenantSecret(body.telegramBotToken);
-    if (body.telegramChatId !== undefined) updateData.telegramChatId = setTenantSecret(body.telegramChatId);
+    if (body.deepseekApiKey !== undefined)
+      updateData.deepseekApiKey = setTenantSecret(body.deepseekApiKey);
+    if (body.telegramBotToken !== undefined)
+      updateData.telegramBotToken = setTenantSecret(body.telegramBotToken);
+    if (body.telegramChatId !== undefined)
+      updateData.telegramChatId = setTenantSecret(body.telegramChatId);
 
     // Merge geoProviderKeys
     if (body.geoProviderKeys !== undefined) {
       const current: Record<string, string> = (() => {
-        try { return JSON.parse(getTenantSecret(existing, "geoProviderKeys") || "{}"); } catch { return {}; }
+        try {
+          return JSON.parse(getTenantSecret(existing, "geoProviderKeys") || "{}");
+        } catch {
+          return {};
+        }
       })();
       const merged = { ...current, ...body.geoProviderKeys };
       updateData.geoProviderKeys = setTenantSecret(JSON.stringify(merged));
@@ -100,6 +105,10 @@ export async function PATCH(
       updateData.geoEnabledProviders = JSON.stringify(body.geoEnabledProviders);
     }
 
+    if (body.gscSiteUrl !== undefined) {
+      updateData.gscSiteUrl = body.gscSiteUrl;
+    }
+
     if (Object.keys(updateData).length > 0) {
       db.update(tenants).set(updateData).where(eq(tenants.id, id)).run();
     }
@@ -107,9 +116,13 @@ export async function PATCH(
     // Return updated (masked) settings — reuse GET logic by calling ourselves
     const updated = db.select().from(tenants).where(eq(tenants.id, id)).get();
     let geoProviderKeys: Record<string, string> = {};
-    try { geoProviderKeys = JSON.parse(getTenantSecret(updated!, "geoProviderKeys") || "{}"); } catch {}
+    try {
+      geoProviderKeys = JSON.parse(getTenantSecret(updated!, "geoProviderKeys") || "{}");
+    } catch {}
     let geoEnabledProviders: string[] = [];
-    try { geoEnabledProviders = JSON.parse(updated!.geoEnabledProviders || '["deepseek"]'); } catch {}
+    try {
+      geoEnabledProviders = JSON.parse(updated!.geoEnabledProviders || '["deepseek"]');
+    } catch {}
 
     const maskedKeys: Record<string, string> = {};
     for (const [k, v] of Object.entries(geoProviderKeys)) {
