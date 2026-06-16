@@ -51,8 +51,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Determine site URL for GSC (from body → tenant setting)
-    const siteUrl = body.siteUrl || tenant.gscSiteUrl;
+    // Determine site URL for GSC (from body → website setting → tenant setting)
+    const website = db.select().from(websites).where(eq(websites.id, websiteId)).get();
+    const siteUrl = body.siteUrl || website?.gscSiteUrl || tenant.gscSiteUrl;
 
     if (!siteUrl) {
       return Response.json(

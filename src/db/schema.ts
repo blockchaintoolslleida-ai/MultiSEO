@@ -19,7 +19,9 @@ export const tenants = sqliteTable("tenants", {
 
 export const websites = sqliteTable("websites", {
   id: text("id").primaryKey(),
-  tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  tenantId: text("tenant_id")
+    .notNull()
+    .references(() => tenants.id, { onDelete: "cascade" }),
   domain: text("domain").notNull().unique(),
   status: text("status").notNull().default("connected"),
   accessTypes: text("access_types").notNull().default("[]"),
@@ -31,13 +33,16 @@ export const websites = sqliteTable("websites", {
   healthScore: integer("health_score").notNull().default(0),
   lastAudit: text("last_audit").notNull().default(""),
   lastGscSync: text("last_gsc_sync"),
+  gscSiteUrl: text("gsc_site_url"),
   errorMessage: text("error_message"),
   createdAt: text("created_at").notNull().default(""),
 });
 
 export const keywords = sqliteTable("keywords", {
   id: text("id").primaryKey(),
-  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  websiteId: text("website_id")
+    .notNull()
+    .references(() => websites.id, { onDelete: "cascade" }),
   keyword: text("keyword").notNull(),
   position: integer("position").notNull(),
   change: integer("change").notNull().default(0),
@@ -50,7 +55,9 @@ export const keywords = sqliteTable("keywords", {
 
 export const competitors = sqliteTable("competitors", {
   id: text("id").primaryKey(),
-  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  websiteId: text("website_id")
+    .notNull()
+    .references(() => websites.id, { onDelete: "cascade" }),
   rank: integer("rank").notNull(),
   domain: text("domain").notNull(),
   avgPosition: real("avg_position").notNull(),
@@ -64,14 +71,18 @@ export const competitors = sqliteTable("competitors", {
 
 export const rankingHistory = sqliteTable("ranking_history", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  websiteId: text("website_id")
+    .notNull()
+    .references(() => websites.id, { onDelete: "cascade" }),
   date: text("date").notNull(),
   avgPosition: real("avg_position").notNull(),
 });
 
 export const articles = sqliteTable("articles", {
   id: text("id").primaryKey(),
-  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  websiteId: text("website_id")
+    .notNull()
+    .references(() => websites.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   status: text("status").notNull().default("draft"),
   aiModel: text("ai_model"),
@@ -91,7 +102,9 @@ export const articles = sqliteTable("articles", {
 
 export const reports = sqliteTable("reports", {
   id: text("id").primaryKey(),
-  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  websiteId: text("website_id")
+    .notNull()
+    .references(() => websites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   status: text("status").notNull().default("draft"),
   frequency: text("frequency").notNull().default("monthly"),
@@ -107,7 +120,9 @@ export const reports = sqliteTable("reports", {
 
 export const notifications = sqliteTable("notifications", {
   id: text("id").primaryKey(),
-  tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  tenantId: text("tenant_id")
+    .notNull()
+    .references(() => tenants.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
   type: text("type").notNull().default("info"),
   time: text("time").notNull().default(""),
@@ -117,7 +132,9 @@ export const notifications = sqliteTable("notifications", {
 
 export const geoQueries = sqliteTable("geo_queries", {
   id: text("id").primaryKey(),
-  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
+  websiteId: text("website_id")
+    .notNull()
+    .references(() => websites.id, { onDelete: "cascade" }),
   keyword: text("keyword").notNull(),
   query: text("query").notNull(),
   source: text("source").notNull().default("seo"),
@@ -127,8 +144,12 @@ export const geoQueries = sqliteTable("geo_queries", {
 
 export const geoResults = sqliteTable("geo_results", {
   id: text("id").primaryKey(),
-  websiteId: text("website_id").notNull().references(() => websites.id, { onDelete: "cascade" }),
-  queryId: text("query_id").notNull().references(() => geoQueries.id, { onDelete: "cascade" }),
+  websiteId: text("website_id")
+    .notNull()
+    .references(() => websites.id, { onDelete: "cascade" }),
+  queryId: text("query_id")
+    .notNull()
+    .references(() => geoQueries.id, { onDelete: "cascade" }),
   provider: text("provider").notNull(),
   brandMentioned: integer("brand_mentioned").notNull().default(0),
   mentionPosition: integer("mention_position"),

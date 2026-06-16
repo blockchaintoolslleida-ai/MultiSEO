@@ -13,13 +13,18 @@ const ACCESS_OPTIONS: { type: AccessType; icon: React.ReactNode; label: string }
 
 interface EditWebsiteModalProps {
   website: WebsiteData;
-  onSave: (data: { domain: string; accessTypes: AccessType[] }) => Promise<void>;
+  onSave: (data: {
+    domain: string;
+    accessTypes: AccessType[];
+    gscSiteUrl?: string | null;
+  }) => Promise<void>;
   onClose: () => void;
 }
 
 export function EditWebsiteModal({ website, onSave, onClose }: EditWebsiteModalProps) {
   const [domain, setDomain] = useState(website.domain);
   const [accessTypes, setAccessTypes] = useState<AccessType[]>([...website.accessTypes]);
+  const [gscSiteUrl, setGscSiteUrl] = useState(website.gscSiteUrl ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +55,7 @@ export function EditWebsiteModal({ website, onSave, onClose }: EditWebsiteModalP
     setError(null);
     setSaving(true);
     try {
-      await onSave({ domain: trimmed, accessTypes });
+      await onSave({ domain: trimmed, accessTypes, gscSiteUrl: gscSiteUrl.trim() || null });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
     } finally {
@@ -83,6 +88,18 @@ export function EditWebsiteModal({ website, onSave, onClose }: EditWebsiteModalP
           onChange={(e) => setDomain(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none mb-4"
           placeholder="ejemplo.com"
+        />
+
+        {/* GSC Site URL */}
+        <label className="block text-xs font-semibold text-gray-500 mb-1.5">
+          URL de Google Search Console
+        </label>
+        <input
+          type="text"
+          value={gscSiteUrl}
+          onChange={(e) => setGscSiteUrl(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none mb-4"
+          placeholder="https://www.miweb.com/ o vacío para usar config del tenant"
         />
 
         {/* Access Types */}

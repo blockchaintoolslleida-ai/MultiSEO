@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTenant } from "@/hooks/use-tenant";
 import { useWebsiteSelector } from "@/hooks/use-website-selector";
+import { apiFetch } from "@/lib/api-client";
 import { TrendingUp } from "lucide-react";
 import { KeywordsAdvancedTable } from "@/components/rankings/keywords-advanced-table";
 import type { KeywordData } from "@/types/seo";
@@ -72,8 +73,8 @@ export default function RankingsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/keywords/${id}`, { method: "DELETE" });
-      if (res.ok) fetchKeywords();
+      await apiFetch(`/api/keywords/${id}`, { method: "DELETE" });
+      fetchKeywords();
     } catch {
       /* ignore */
     }
@@ -81,12 +82,8 @@ export default function RankingsPage() {
 
   const handleUpdate = async (id: string, field: string, value: number | string) => {
     try {
-      const res = await fetch(`/api/keywords/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [field]: value }),
-      });
-      if (res.ok) fetchKeywords();
+      await apiFetch(`/api/keywords/${id}`, { method: "PATCH", body: { [field]: value } });
+      fetchKeywords();
     } catch {
       /* ignore */
     }

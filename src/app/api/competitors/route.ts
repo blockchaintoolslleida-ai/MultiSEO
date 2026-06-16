@@ -9,6 +9,7 @@ import type {
 } from "@/types/seo";
 import { ONE_WEEK_MS, POSITION_THRESHOLDS, MAX_RECOMMENDATIONS } from "@/lib/constants";
 import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
+import { analyzeCompetitor, normalizeDomain } from "@/lib/competitor-analyzer";
 
 export async function GET(request: Request) {
   const tenantId = getTenantId(request);
@@ -198,11 +199,6 @@ export async function GET(request: Request) {
   }
 }
 
-/** Strip protocol and trailing slash so domain matching works. */
-function normalizeDomain(d: string): string {
-  return d.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
-}
-
 export async function POST(request: Request) {
   const tenantId = getTenantId(request);
 
@@ -276,14 +272,35 @@ export async function POST(request: Request) {
       })
       .run();
 
-    const created = db.select().from(competitors).where(eq(competitors.id, id)).get();
+    let created = db.select().from(competitors).where(eq(competitors.id, id)).get();
+
+    // Auto-analyze with DeepSeek AI (silently skip if key missing or API fails)
+    try {
+      const analysisResult = await analyzeCompetitor(id, tenantId);
+      if (analysisResult) {
+        created = db.select().from(competitors).where(eq(competitors.id, id)).get();
+      }
+    } catch (err) {
+      // Competitor was already created — analysis is best-effort
+      if (process.env.NODE_ENV === "development") {
+        console.error("Auto-analyze competitor failed:", err);
+      }
+    }
+
+    if (!created) {
+      return Response.json(
+        { error: "Competitor created but could not be retrieved" },
+        { status: 500 }
+      );
+    }
+
     return Response.json(
       {
         data: {
           ...created,
-          keywordsOverlap: JSON.parse(created!.keywordsOverlap),
-          highlightChange: created!.highlightChange === 1,
-          isManual: created!.isManual === 1,
+          keywordsOverlap: JSON.parse(created.keywordsOverlap),
+          highlightChange: created.highlightChange === 1,
+          isManual: created.isManual === 1,
         },
       },
       { status: 201 }

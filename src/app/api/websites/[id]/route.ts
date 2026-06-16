@@ -3,10 +3,7 @@ import { websites } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getTenantId, verifyWebsiteOwnership } from "@/lib/tenant";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const result = db.select().from(websites).where(eq(websites.id, id)).get();
@@ -21,10 +18,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const tenantId = getTenantId(request);
@@ -44,6 +38,7 @@ export async function PATCH(
     if (body.healthScore !== undefined) updateData.healthScore = body.healthScore;
     if (body.lastAudit !== undefined) updateData.lastAudit = body.lastAudit;
     if (body.errorMessage !== undefined) updateData.errorMessage = body.errorMessage;
+    if (body.gscSiteUrl !== undefined) updateData.gscSiteUrl = body.gscSiteUrl;
 
     if (Object.keys(updateData).length > 0) {
       db.update(websites).set(updateData).where(eq(websites.id, id)).run();
@@ -59,10 +54,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const tenantId = getTenantId(request);

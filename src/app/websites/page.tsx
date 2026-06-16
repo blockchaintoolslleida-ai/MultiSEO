@@ -32,11 +32,15 @@ export default function WebsitesPage() {
     setEditingWebsite(website);
   };
 
-  const handleSaveEdit = async (data: { domain: string; accessTypes: AccessType[] }) => {
+  const handleSaveEdit = async (data: {
+    domain: string;
+    accessTypes: AccessType[];
+    gscSiteUrl?: string | null;
+  }) => {
     if (!editingWebsite) return;
     await apiFetch(`/api/websites/${editingWebsite.id}`, {
       method: "PATCH",
-      body: { domain: data.domain, accessTypes: data.accessTypes },
+      body: { domain: data.domain, accessTypes: data.accessTypes, gscSiteUrl: data.gscSiteUrl },
     });
     setEditingWebsite(null);
     refetch();

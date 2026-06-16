@@ -106,6 +106,7 @@ export interface WebsiteData {
   avgPosition: number;
   lastAudit: string;
   errorMessage?: string;
+  gscSiteUrl?: string | null;
 }
 
 export interface WebsiteStats {

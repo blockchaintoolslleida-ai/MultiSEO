@@ -4,12 +4,8 @@ import { useState, useCallback } from "react";
 import { useApi } from "@/hooks/use-api";
 import { useTenant } from "@/hooks/use-tenant";
 import { useWebsiteSelector } from "@/hooks/use-website-selector";
-import type {
-  GEOKPI,
-  GEOQueryResult,
-  GEORecommendation,
-  ShareOfVoiceItem,
-} from "@/lib/geo/types";
+import { apiFetch } from "@/lib/api-client";
+import type { GEOKPI, GEOQueryResult, GEORecommendation, ShareOfVoiceItem } from "@/lib/geo/types";
 import { GeoKPIGrid } from "@/components/geo/geo-kpi-grid";
 import { ShareOfVoiceChart } from "@/components/geo/share-of-voice-chart";
 import { VisibilityList } from "@/components/geo/visibility-list";
@@ -42,17 +38,15 @@ export default function GeoPage() {
     data: geoData,
     loading: geoLoading,
     refetch: refetchResults,
-  } = useApi<GEOResultsData>(
-    tenant ? `/api/geo/results?websiteId=${websiteId}` : ""
-  );
+  } = useApi<GEOResultsData>(tenant ? `/api/geo/results?websiteId=${websiteId}` : "");
 
   const { data: sovData, refetch: refetchSOV } = useApi<ShareOfVoiceItem[]>(
     tenant ? `/api/geo/share-of-voice?websiteId=${websiteId}` : ""
   );
 
-  const { data: recommendations, refetch: refetchRecs } = useApi<
-    GEORecommendation[]
-  >(tenant ? `/api/geo/recommendations?websiteId=${websiteId}` : "");
+  const { data: recommendations, refetch: refetchRecs } = useApi<GEORecommendation[]>(
+    tenant ? `/api/geo/recommendations?websiteId=${websiteId}` : ""
+  );
 
   const { data: queries, refetch: refetchQueries } = useApi<GeoQuery[]>(
     tenant ? `/api/geo/queries?websiteId=${websiteId}` : ""
@@ -70,13 +64,13 @@ export default function GeoPage() {
     setScanError(null);
     setScanResult(null);
     try {
-      const res = await fetch("/api/geo/scan", {
+      const json = await apiFetch<{
+        data: { brandMentions: number; queriesScanned: number; avgSentiment: string };
+      }>("/api/geo/scan", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ websiteId }),
+        body: { websiteId },
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Scan failed");
+      if (!json.data) throw new Error("Scan failed");
       setScanResult(
         `${json.data.brandMentions}/${json.data.queriesScanned} queries con mención de marca · ${json.data.avgSentiment}`
       );
@@ -97,10 +91,7 @@ export default function GeoPage() {
 
   if (loading) {
     return (
-      <div
-        className="flex items-center justify-center"
-        style={{ minHeight: "60vh" }}
-      >
+      <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-gray-400">Cargando GEO Tracker...</p>
@@ -160,12 +151,8 @@ export default function GeoPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {scanResult && (
-            <span className="text-xs text-green-600">{scanResult}</span>
-          )}
-          {scanError && (
-            <span className="text-xs text-red-500">{scanError}</span>
-          )}
+          {scanResult && <span className="text-xs text-green-600">{scanResult}</span>}
+          {scanError && <span className="text-xs text-red-500">{scanError}</span>}
           <button
             onClick={handleScan}
             disabled={scanning}
@@ -199,11 +186,7 @@ export default function GeoPage() {
         <RecommendationsPanel recommendations={recs} />
       </div>
 
-      <QueryManager
-        queries={queryList}
-        websiteId={websiteId}
-        onRefresh={refetchQueries}
-      />
+      <QueryManager queries={queryList} websiteId={websiteId} onRefresh={refetchQueries} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiFetch } from "@/lib/api-client";
 
 interface GeoQuery {
   id: string;
@@ -26,19 +27,14 @@ export function QueryManager({ queries, websiteId, onRefresh }: Props) {
     if (!newKeyword.trim() || !newQuery.trim()) return;
     setError(null);
     try {
-      const res = await fetch("/api/geo/queries", {
+      await apiFetch("/api/geo/queries", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           websiteId,
           keyword: newKeyword.trim(),
           query: newQuery.trim(),
-        }),
+        },
       });
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || "Error adding query");
-      }
       setNewKeyword("");
       setNewQuery("");
       setAdding(false);
@@ -50,11 +46,7 @@ export function QueryManager({ queries, websiteId, onRefresh }: Props) {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/geo/queries/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || "Error deleting query");
-      }
+      await apiFetch(`/api/geo/queries/${id}`, { method: "DELETE" });
       onRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
@@ -64,9 +56,7 @@ export function QueryManager({ queries, websiteId, onRefresh }: Props) {
   return (
     <div className="bg-white border border-gray-200 rounded-[10px] p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Gestión de Queries GEO
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900">Gestión de Queries GEO</h3>
         <button
           onClick={() => setAdding(!adding)}
           className="text-xs font-medium text-brand-600 hover:text-brand-700"
@@ -104,38 +94,24 @@ export function QueryManager({ queries, websiteId, onRefresh }: Props) {
 
       {queries.length === 0 ? (
         <p className="text-xs text-gray-400 text-center py-4">
-          No hay queries GEO. Las queries se generan automáticamente desde las
-          keywords SEO.
+          No hay queries GEO. Las queries se generan automáticamente desde las keywords SEO.
         </p>
       ) : (
         <div className="max-h-[300px] overflow-y-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left py-2 font-medium text-gray-400">
-                  Query
-                </th>
-                <th className="text-left py-2 font-medium text-gray-400">
-                  Fuente
-                </th>
-                <th className="text-left py-2 font-medium text-gray-400">
-                  Estado
-                </th>
-                <th className="text-right py-2 font-medium text-gray-400">
-                  Acción
-                </th>
+                <th className="text-left py-2 font-medium text-gray-400">Query</th>
+                <th className="text-left py-2 font-medium text-gray-400">Fuente</th>
+                <th className="text-left py-2 font-medium text-gray-400">Estado</th>
+                <th className="text-right py-2 font-medium text-gray-400">Acción</th>
               </tr>
             </thead>
             <tbody>
               {queries.map((q) => (
-                <tr
-                  key={q.id}
-                  className="border-b border-gray-50 hover:bg-gray-50/50"
-                >
+                <tr key={q.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="py-2 pr-2">
-                    <p className="text-gray-800 truncate max-w-[300px]">
-                      {q.query}
-                    </p>
+                    <p className="text-gray-800 truncate max-w-[300px]">{q.query}</p>
                     <p className="text-gray-400 text-[10px]">{q.keyword}</p>
                   </td>
                   <td className="py-2">
@@ -151,9 +127,7 @@ export function QueryManager({ queries, websiteId, onRefresh }: Props) {
                   </td>
                   <td className="py-2">
                     <span
-                      className={`text-[10px] ${
-                        q.enabled ? "text-green-600" : "text-gray-400"
-                      }`}
+                      className={`text-[10px] ${q.enabled ? "text-green-600" : "text-gray-400"}`}
                     >
                       {q.enabled ? "activa" : "inactiva"}
                     </span>
