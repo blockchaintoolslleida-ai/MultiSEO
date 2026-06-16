@@ -122,6 +122,72 @@ export async function getSearchAnalytics(
   return data.rows ?? [];
 }
 
+import { cacheGet, cacheSet } from "@/lib/cache";
+
+/**
+ * Fetch search analytics with pagination.
+ * Calls the GSC API repeatedly to get more than the 250-row single-call limit.
+ * Includes a 1-second delay between pages to respect rate limits.
+ */
+export async function getSearchAnalyticsPaginated(
+  accessToken: string,
+  siteUrl: string,
+  startDate: string,
+  endDate: string,
+  pageSize: number = 250,
+  maxRows: number = 2000
+): Promise<GSCSearchAnalyticsRow[]> {
+  const cacheKey = `gsc:analytics:${siteUrl}:${startDate}:${endDate}`;
+  const cached = cacheGet<GSCSearchAnalyticsRow[]>(cacheKey);
+  if (cached) return cached;
+
+  const allRows: GSCSearchAnalyticsRow[] = [];
+  let startRow = 0;
+
+  while (allRows.length < maxRows) {
+    const url = `${GSC_API_BASE}/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        startDate,
+        endDate,
+        dimensions: ["query"],
+        rowLimit: pageSize,
+        startRow,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`GSC API error ${res.status} for site "${siteUrl}": ${err}`);
+    }
+
+    const data: GSCSearchAnalyticsResponse = await res.json();
+    const rows = data.rows ?? [];
+
+    if (rows.length === 0) break;
+
+    allRows.push(...rows);
+
+    if (rows.length < pageSize) break; // Last page
+
+    startRow += pageSize;
+
+    // Rate limit: 1-second delay between pages
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  // Cache for 1 hour
+  cacheSet(cacheKey, allRows, 60 * 60_000);
+
+  return allRows;
+}
+
 export async function listSites(accessToken: string): Promise<string[]> {
   const url = `${GSC_API_BASE}/sites`;
 

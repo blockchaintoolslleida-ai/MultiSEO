@@ -23,6 +23,52 @@ export interface RankingPoint {
   avgPosition: number;
 }
 
+// === Rankings (new system) ===
+
+export interface RankingHistoryPoint {
+  date: string;
+  position: number;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+}
+
+export interface RankingKeyword {
+  id: string;
+  keyword: string;
+  position: number;
+  change: number;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  difficulty: "easy" | "medium" | "hard";
+  trend: "up" | "down" | "flat";
+  isTop3: boolean;
+  isFalling: boolean;
+  history: RankingHistoryPoint[];
+}
+
+export interface RankingsSummary {
+  avgPosition: number;
+  totalClicks: number;
+  totalImpressions: number;
+  avgCtr: number;
+  improved: number;
+  declined: number;
+  top10: number;
+  top3: number;
+}
+
+export interface RankingsApiResponse {
+  websiteId: string;
+  websiteDomain: string;
+  period: { startDate: string; endDate: string; days: number };
+  lastSync: string | null;
+  summary: RankingsSummary;
+  keywords: RankingKeyword[];
+  total: number;
+}
+
 export interface CompetitorData {
   rank: number;
   domain: string;

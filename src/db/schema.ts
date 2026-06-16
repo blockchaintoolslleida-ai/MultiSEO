@@ -51,6 +51,21 @@ export const keywords = sqliteTable("keywords", {
   history: text("history").notNull().default("[]"),
   isTop3: integer("is_top3").notNull().default(0),
   isFalling: integer("is_falling").notNull().default(0),
+  clicks: integer("clicks").notNull().default(0),
+  impressions: integer("impressions").notNull().default(0),
+  ctr: real("ctr").notNull().default(0),
+});
+
+export const keywordRankingHistory = sqliteTable("keyword_ranking_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  keywordId: text("keyword_id")
+    .notNull()
+    .references(() => keywords.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),
+  position: real("position").notNull(),
+  clicks: integer("clicks").notNull().default(0),
+  impressions: integer("impressions").notNull().default(0),
+  ctr: real("ctr").notNull().default(0),
 });
 
 export const competitors = sqliteTable("competitors", {

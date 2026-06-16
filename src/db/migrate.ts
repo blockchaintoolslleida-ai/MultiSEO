@@ -1,7 +1,14 @@
 import Database from "better-sqlite3";
 import * as path from "path";
 
-interface PragmaColumn { cid: number; name: string; type: string; notnull: number; dflt_value: string | null; pk: number; }
+interface PragmaColumn {
+  cid: number;
+  name: string;
+  type: string;
+  notnull: number;
+  dflt_value: string | null;
+  pk: number;
+}
 
 const DB_PATH = path.resolve(process.cwd(), "multiseo.db");
 const sqlite = new Database(DB_PATH);
@@ -111,7 +118,9 @@ try {
   `);
 
   // GSC columns (add if not exist — SQLite doesn't support IF NOT EXISTS for ALTER)
-  const tenantCols = (sqlite.pragma("table_info(tenants)") as PragmaColumn[]).map((c: PragmaColumn) => c.name);
+  const tenantCols = (sqlite.pragma("table_info(tenants)") as PragmaColumn[]).map(
+    (c: PragmaColumn) => c.name
+  );
   if (!tenantCols.includes("gsc_refresh_token")) {
     sqlite.exec("ALTER TABLE tenants ADD COLUMN gsc_refresh_token TEXT");
   }
@@ -141,7 +150,9 @@ try {
   }
 
   // Competitors new columns
-  const compCols = (sqlite.pragma("table_info(competitors)") as PragmaColumn[]).map((c: PragmaColumn) => c.name);
+  const compCols = (sqlite.pragma("table_info(competitors)") as PragmaColumn[]).map(
+    (c: PragmaColumn) => c.name
+  );
   if (!compCols.includes("keywords_overlap")) {
     sqlite.exec("ALTER TABLE competitors ADD COLUMN keywords_overlap TEXT NOT NULL DEFAULT '[]'");
   }
@@ -155,11 +166,43 @@ try {
     sqlite.exec("ALTER TABLE competitors ADD COLUMN last_updated TEXT NOT NULL DEFAULT ''");
   }
 
-  // Websites — last_gsc_sync
-  const webCols = (sqlite.pragma("table_info(websites)") as PragmaColumn[]).map((c: PragmaColumn) => c.name);
+  // Websites — last_gsc_sync + gsc_site_url
+  const webCols = (sqlite.pragma("table_info(websites)") as PragmaColumn[]).map(
+    (c: PragmaColumn) => c.name
+  );
   if (!webCols.includes("last_gsc_sync")) {
     sqlite.exec("ALTER TABLE websites ADD COLUMN last_gsc_sync TEXT");
   }
+  if (!webCols.includes("gsc_site_url")) {
+    sqlite.exec("ALTER TABLE websites ADD COLUMN gsc_site_url TEXT");
+  }
+
+  // Keywords — clicks, impressions, ctr
+  const kwCols = (sqlite.pragma("table_info(keywords)") as PragmaColumn[]).map(
+    (c: PragmaColumn) => c.name
+  );
+  if (!kwCols.includes("clicks")) {
+    sqlite.exec("ALTER TABLE keywords ADD COLUMN clicks INTEGER NOT NULL DEFAULT 0");
+  }
+  if (!kwCols.includes("impressions")) {
+    sqlite.exec("ALTER TABLE keywords ADD COLUMN impressions INTEGER NOT NULL DEFAULT 0");
+  }
+  if (!kwCols.includes("ctr")) {
+    sqlite.exec("ALTER TABLE keywords ADD COLUMN ctr REAL NOT NULL DEFAULT 0");
+  }
+
+  // Keyword ranking history (daily snapshots per keyword)
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS keyword_ranking_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      keyword_id TEXT NOT NULL REFERENCES keywords(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      position REAL NOT NULL,
+      clicks INTEGER NOT NULL DEFAULT 0,
+      impressions INTEGER NOT NULL DEFAULT 0,
+      ctr REAL NOT NULL DEFAULT 0
+    );
+  `);
 
   // GEO tables
   sqlite.exec(`

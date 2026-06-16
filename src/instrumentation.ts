@@ -7,11 +7,15 @@
  * @see https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  */
 import { validateStartupSecrets } from "@/lib/startup-checks";
+import { startScheduler } from "@/lib/scheduler";
 
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     // Only run startup checks in Node.js runtime, not Edge
     const result = validateStartupSecrets();
+
+    // Start daily GSC sync scheduler
+    startScheduler();
 
     if (!result.ok) {
       console.error("╔══════════════════════════════════════════════╗");
